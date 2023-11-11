@@ -8,6 +8,5 @@ urlpatterns = [
     path('logout/', LogoutView.as_view()),
     path('getuser/', GetUserView.as_view()),
     path('', VRegistro.as_view(), name="Autenticacion")
-    # path('register/', RegisterView.as_view()),
 
 ]

@@ -27,7 +27,6 @@ urlpatterns = [
     path('gateway/', include('gateway.urls')),
     path('authentication/', include('authentication.urls')),
     path('census/', include('census.urls')),
-
 ]
 
 for module in settings.MODULES:
