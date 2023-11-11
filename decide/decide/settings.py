@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'gateway',
     'crispy_forms',
     'crispy_bootstrap4',
-
 ]
 
 REST_FRAMEWORK = {
@@ -198,4 +197,3 @@ EMAIL_USE_TLS= True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "nanomotors33@gmail.com"
 EMAIL_HOST_PASSWORD = "qwsn idwj hrcv tysh "
-
