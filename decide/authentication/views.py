@@ -11,7 +11,7 @@ from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logaout, authenticate
+from django.contrib.auth import login, logout, authenticate
 from django.views.generic import View
 from .forms import CustomUserCreationForm
 from .serializers import UserSerializer
