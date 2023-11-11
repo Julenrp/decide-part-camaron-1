@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_swagger',
     'gateway',
+    'crispy_forms',
+    'crispy_bootstrap4',
 ]
 
 REST_FRAMEWORK = {
@@ -180,3 +182,17 @@ if os.path.exists("config.jsonnet"):
 
 
 INSTALLED_APPS = INSTALLED_APPS + MODULES
+
+# crispy_form
+
+CRISPY_ALLOWED_TEMPLATE_PACK = 'bootstrap4'
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+# MESSAGE_TAGS = {
+#     mensajes_de_error.DEBUG:'debug',
+#     mensajes_de_error.INFO:'info',
+#     mensajes_de_error.SUCCESS:'success',
+#     mensajes_de_error.WARNING:'warning',
+#     mensajes_de_error.ERROR:'danger',
+
+# }
