@@ -2,9 +2,9 @@ from django.urls import path
 from . import views
 from django.conf import settings
 
-urlpattern = [
+urlpatterns = [
 
-    path('', views.contacto, name="Peticion")
+    path('', views.peticionCenso, name="Peticion"),
 
 
 ]

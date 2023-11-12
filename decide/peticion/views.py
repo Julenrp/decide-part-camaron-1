@@ -3,7 +3,7 @@ from .forms import FormularioPeticion
 from django.core.mail import EmailMessage
 
 # Create your views here.
-def contacto(request):
+def peticionCenso(request):
     formulario_Peticion = FormularioPeticion()
 
     if request.method == "POST":
@@ -16,9 +16,9 @@ def contacto(request):
                                   .format(nombre, email, contenido),"",["nanomotors33@gmail.com"],reply_to=[email])
             try:
                 email2.send()
-                return redirect("/contacto/?valido")
+                return redirect("/peticion/?valido")
             except:
-                return redirect("/contacto/?novalido")
+                return redirect("/peticion/?novalido")
 
-    return render(request, "contacto/contacto.html", {"miFormulario":formulario_Peticion})
+    return render(request, "peticion/peticion.html", {"miFormulario":formulario_Peticion})
 
