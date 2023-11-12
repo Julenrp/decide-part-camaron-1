@@ -4,7 +4,7 @@ from django.conf import settings
 
 urlpatterns = [
 
-    path('', views.peticionCenso, name="Peticion"),
+    path('', views.peticionCenso, name="peticion"),
 
 
 ]
