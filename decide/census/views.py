@@ -12,6 +12,9 @@ from rest_framework.status import (
 
 from base.perms import UserIsStaff
 from .models import Census
+from django.shortcuts import render, redirect
+from .forms import FormularioPeticion
+from django.core.mail import EmailMessage
 
 
 class CensusCreate(generics.ListCreateAPIView):
@@ -49,3 +52,23 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
         except ObjectDoesNotExist:
             return Response('Invalid voter', status=ST_401)
         return Response('Valid voter')
+
+
+def peticionCenso(request):
+    formulario_Peticion = FormularioPeticion()
+
+    if request.method == "POST":
+        formulario_Peticion = FormularioPeticion(data=request.POST)
+        if formulario_Peticion.is_valid():
+            nombre = request.POST.get("nombre")
+            email = request.POST.get("email")
+            contenido = request.POST.get("contenido")
+            email2 = EmailMessage("Peticion de censo","El usuario con nombre {} y correo {} solicita:\n\n{}".format(nombre, email, contenido),"",["nanomotors33@gmail.com"],reply_to=[email])
+            try:
+                email2.send()
+                return redirect("http://127.0.0.1:8000/census/peticion/?valido")
+            except:
+                return redirect("http://127.0.0.1:8000/census/peticion/?novalido")
+
+    return render(request, "peticion/peticion.html", {"miFormulario":formulario_Peticion})
+

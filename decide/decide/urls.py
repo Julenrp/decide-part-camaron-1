@@ -26,7 +26,7 @@ urlpatterns = [
     path('doc/', schema_view),
     path('gateway/', include('gateway.urls')),
     path('authentication/', include('authentication.urls')),
-    path('peticion/', include('peticion.urls')),
+    path('census/', include('census.urls')),
 
 ]
 
