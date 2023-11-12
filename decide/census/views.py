@@ -1,3 +1,7 @@
+import json
+from django.views.generic import TemplateView
+from django.conf import settings
+from django.http import Http404
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import generics
@@ -10,6 +14,7 @@ from rest_framework.status import (
         HTTP_409_CONFLICT as ST_409
 )
 
+from base import mods
 from base.perms import UserIsStaff
 from .models import Census
 
@@ -49,3 +54,6 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
         except ObjectDoesNotExist:
             return Response('Invalid voter', status=ST_401)
         return Response('Valid voter')
+    
+class CensusView(TemplateView):
+    template_name = 'census.html'
