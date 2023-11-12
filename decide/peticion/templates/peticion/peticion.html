@@ -1,4 +1,20 @@
-
-
-
-<h1> Hola funciona</h1>
+<html>
+    <head>
+        <title>
+            Formulario de petición de censo
+        </title>
+    </head>
+    <body>
+        <h1 style = "background-color: blue;color: aliceblue;text-align: center;"> Formulario de Peticion de Censo</h1>
+        <div class="contenedorFormulario">
+            {% if "valido" in request.GET %}
+                    <p style="color: rgb(73, 126, 172);"> Gracias por enviar su solicitud</p>
+            {% endif %}
+            <form action="" method="POST" style="text-align: center;"> {% csrf_token %}
+            <table style="color:rgb(11, 58, 99); margin: 20px auto;">{{miFormulario.as_table}}</table>
+            <input type="submit" value="Enviar" style="width:150px">
+            </form>
+        </div>
+    
+    </body>
+</html>
