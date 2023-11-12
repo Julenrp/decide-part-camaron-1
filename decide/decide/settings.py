@@ -183,16 +183,17 @@ if os.path.exists("config.jsonnet"):
 
 INSTALLED_APPS = INSTALLED_APPS + MODULES
 
+
 # crispy_form
 
 CRISPY_ALLOWED_TEMPLATE_PACK = 'bootstrap4'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-# MESSAGE_TAGS = {
-#     mensajes_de_error.DEBUG:'debug',
-#     mensajes_de_error.INFO:'info',
-#     mensajes_de_error.SUCCESS:'success',
-#     mensajes_de_error.WARNING:'warning',
-#     mensajes_de_error.ERROR:'danger',
+#Configuración email
+EMAIL_BACKEND = "django.core.mail.backend.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_USE_TLS= True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "nanomotors33@gamil.com"
+EMAIL_HOST_PASSWORD = "jwiv lbwt qhmt aels"
 
-# }
