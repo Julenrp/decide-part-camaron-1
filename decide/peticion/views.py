@@ -12,8 +12,7 @@ def peticionCenso(request):
             nombre = request.POST.get("nombre")
             email = request.POST.get("email")
             contenido = request.POST.get("contenido")
-            email2 = EmailMessage("Peticion de censo","El usuario con nombre {} y correo {} solicita:\n\n{}"
-                                  .format(nombre, email, contenido),"",["nanomotors33@gmail.com"],reply_to=[email])
+            email2 = EmailMessage("Peticion de censo","El usuario con nombre {} y correo {} solicita:\n\n{}".format(nombre, email, contenido),"",["nanomotors33@gmail.com"],reply_to=[email])
             try:
                 email2.send()
                 return redirect("/peticion/?valido")
