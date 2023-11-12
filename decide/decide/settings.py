@@ -184,9 +184,10 @@ INSTALLED_APPS = INSTALLED_APPS + MODULES
 
 
 #Configuración email
-EMAIL_BACKEND = "django.core.mail.backend.smtp.EmailBackend"
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS= True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = "nanomotors33@gamil.com"
-EMAIL_HOST_PASSWORD = "jwiv lbwt qhmt aels"
+EMAIL_HOST_USER = "nanomotors33@gmail.com"
+EMAIL_HOST_PASSWORD = "qwsn idwj hrcv tysh "
