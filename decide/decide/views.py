@@ -20,6 +20,9 @@ from base.perms import UserIsStaff
 class HomeView(TemplateView):
     template_name = 'home.html'
 
+class HomeViewEsp(TemplateView):
+    template_name = 'homeesp.html'
+
 
 
     
