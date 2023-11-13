@@ -8,17 +8,17 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 <style>
     body {
-      background-color: #f5f5f5; /* Light gray background color */
+      background-color: #f5f5f5; 
       font-family: 'Arial', sans-serif;
     }
 
     .jumbotron {
-      background: linear-gradient(to right, #3498db, #1abc9c); /* Gradient background with Bootstrap primary and success colors */
+      background: linear-gradient(to right, #3498db, #1abc9c); 
       color: #fff;
     }
 
     .section-header {
-      background-color: #e74c3c; /* Bootstrap danger color */
+      background-color: #e74c3c;
       color: #fff;
       padding: 10px;
       margin-bottom: 20px;
@@ -66,7 +66,6 @@
 {% endblock %}
 
 {% block content %}
-<!-- Contenedor para el mensaje de bienvenida -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <a class="navbar-brand" href="/">DECIDE </a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,29 +74,28 @@
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
             <li class="nav-item">
-                <a class="nav-link" href="/census/census">Census</a>
+                <a class="nav-link" href="/census/census">Censo</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Voting</a>
+                <a class="nav-link" href="#">Votación</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Groups</a>
+                <a class="nav-link" href="#">Grupos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Users</a>
+                <a class="nav-link" href="#">Usuarios</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Votes</a>
+                <a class="nav-link" href="#">Votos</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Questions</a>
+                <a class="nav-link" href="#">Preguntas</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link language-dropdown-link" href="#" onclick="toggleLanguageDropdown()">Language</a>
+                <a class="nav-link language-dropdown-link" href="#" onclick="toggleLanguageDropdown()">Idiomas</a>
                 <select class="language-dropdown" id="languageSelect">
                     <option value="en">English</option>
                     <option value="es">Español</option>
-               
                 </select>
             </li>
 
@@ -108,19 +106,19 @@
 
 <div class="container mt-5">
     <div class="jumbotron text-center">
-      <h1 class="display-4">Welcome, <span id="nombre-usuario">Admin</span>!</h1>
-      <p class="lead">Thanks for using our app.</p>
+      <h1 class="display-4">Bienvenido, Administrador!</h1>
+      <p class="lead">Gracias por usar nuestra aplicación.</p>
     </div>
 
     <div class="row">
       <div class="col-md-6 offset-md-3">
         <div class="card">
           <div class="card-body">
-            <h5 class="card-title section-header">What does our application do?</h5>
+            <h5 class="card-title section-header">¿Qué hace nuestra aplicación?</h5>
             <p class="card-text">
-              DECIDE is a comprehensive application revolutionizing vote management, offering streamlined processes 
-              across key sections like Census, Voting, Groups, Users, Votes, and Questions. With an intuitive interface, 
-              robust security, and detailed reporting, DECIDE empowers organizations to enhance transparency and democratic participation.
+                DECIDE es una aplicación integral que revoluciona la gestión de votos y ofrece procesos optimizados en secciones clave como censo, 
+                votación, grupos, usuarios, votos y preguntas. Con una interfaz intuitiva, seguridad sólida e informes detallados, DECIDE permite a 
+                las organizaciones mejorar la transparencia y la participación democrática.
             </p>
           </div>
         </div>
@@ -129,13 +127,13 @@
 
     <div class="row mt-4">
       <div class="col-md-6">
-        <h2 class="section-header">Census</h2>
+        <h2 class="section-header">Censo</h2>
         <div class="card">
           <img src="https://png.pngtree.com/png-clipart/20220120/ourlarge/pngtree-census-png-image_4349359.png" alt="Census Image" class="card-img-top">
           <div class="card-body">
             <p>
-              The Census section facilitates efficient management of voter registration. Administrators can handle voter lists, verify eligibility, 
-              and maintain an accurate database for electoral processes.
+                La sección del Censo facilita la gestión eficiente del registro de votantes. Los administradores pueden manejar listas de votantes, verificar 
+                la elegibilidad y mantener una base de datos precisa para los procesos electorales.
             </p>
           </div>
         </div>
@@ -144,13 +142,13 @@
 
     <div class="row mt-4">
       <div class="col-md-6 offset-md-3">
-        <h2 class="section-header">Voting</h2>
+        <h2 class="section-header">Votación</h2>
         <div class="card">
           <img src="https://ejaso.com/media/bhcp5j3d/voto.png" alt="Voting Image" class="card-img-top">
           <div class="card-body">
             <p>
-              The Voting section simplifies the creation, management, and monitoring of voting processes. 
-              It provides intuitive tools to configure elections, define candidates, and ensure transparent tracking throughout the voting process.
+                La sección Votación simplifica la creación, gestión y seguimiento de los procesos de votación.
+                Proporciona herramientas intuitivas para configurar elecciones, definir candidatos y garantizar un seguimiento transparente durante todo el proceso de votación.
             </p>
           </div>
         </div>
@@ -159,12 +157,12 @@
 
     <div class="row mt-4">
       <div class="col-md-6">
-        <h2 class="section-header">Groups</h2>
+        <h2 class="section-header">Grupos</h2>
         <div class="card">
           <img src="https://cursosmultimedia.es/wp-content/uploads/2021/03/grupos.png" alt="Groups Image" class="card-img-top">
           <div class="card-body">
             <p>
-              The Groups section allows the creation and management of voter groups, facilitating internal elections and the assignment of specific permissions.
+                La sección Grupos permite la creación y gestión de grupos de votantes, facilitando las elecciones internas y la asignación de permisos específicos.
             </p>
           </div>
         </div>
@@ -173,12 +171,13 @@
 
     <div class="row mt-4">
       <div class="col-md-6 offset-md-3">
-        <h2 class="section-header">Users</h2>
+        <h2 class="section-header">Usuarios</h2>
         <div class="card">
           <img src="https://cdn-icons-png.flaticon.com/512/32/32441.png" alt="Users Image" class="card-img-top">
           <div class="card-body">
             <p>
-              The Users section provides a comprehensive panel for user management. From account creation to role assignment and permissions, DECIDE simplifies the administration of user participation in the system.
+                La sección Usuarios proporciona un panel completo para la gestión de usuarios. Desde la creación de cuentas hasta la asignación 
+                de roles y permisos, DECIDE simplifica la administración de la participación de los usuarios en el sistema.
             </p>
           </div>
         </div>
@@ -187,12 +186,13 @@
 
     <div class="row mt-4">
       <div class="col-md-6">
-        <h2 class="section-header">Votes</h2>
+        <h2 class="section-header">Votos</h2>
         <div class="card">
           <img src="https://cdn-icons-png.flaticon.com/512/1582/1582013.png" alt="Votes Image" class="card-img-top">
           <div class="card-body">
             <p>
-              The Votes section offers detailed tracking of votes, ensuring the integrity of the voting process. DECIDE provides a dedicated space to monitor and analyze election results, facilitating informed decision-making.
+                La sección Votos ofrece un seguimiento detallado de los votos, asegurando la integridad del proceso de votación. DECIDE proporciona 
+                un espacio dedicado para monitorear y analizar los resultados electorales, facilitando la toma de decisiones informada.
             </p>
           </div>
         </div>
@@ -201,12 +201,12 @@
 
     <div class="row mt-4">
       <div class="col-md-6 offset-md-3">
-        <h2 class="section-header">Questions</h2>
+        <h2 class="section-header">Preguntas</h2>
         <div class="card">
           <img src="https://previews.123rf.com/images/pixelery/pixelery1510/pixelery151000008/46151512-interrogaci%C3%B3n-azul-entre-otras-cuestiones-grises.jpg" alt="Questions Image" class="card-img-top">
           <div class="card-body">
             <p>
-              The Questions section encourages user interaction and participation. Users can submit and vote on questions, fostering transparency and open communication within the community.
+                La sección de Preguntas fomenta la interacción y participación del usuario. Los usuarios pueden enviar y votar preguntas, fomentando la transparencia y la comunicación abierta dentro de la comunidad.
             </p>
           </div>
         </div>
@@ -220,33 +220,34 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-      function toggleLanguageDropdown() {
-          var languageDropdown = document.getElementById('languageSelect');
-  
-          if (languageDropdown.style.display === 'none' || languageDropdown.style.display === '') {
-              languageDropdown.style.display = 'block';
-          } else {
-              languageDropdown.style.display = 'none';
-          }
-      }
-  
+        function toggleLanguageDropdown() {
+            var languageDropdown = document.getElementById('languageSelect');
+    
+            if (languageDropdown.style.display === 'none' || languageDropdown.style.display === '') {
+                languageDropdown.style.display = 'block';
+            } else {
+                languageDropdown.style.display = 'none';
+            }
+        }
+    
 
-      var currentLanguage = getLanguagePage(); 
-      document.getElementById('languageSelect').value = currentLanguage;
+        var currentLanguage = getLanguagePage(); 
+        document.getElementById('languageSelect').value = currentLanguage;
 
-      document.getElementById('languageSelect').addEventListener('change', function () {
-          var selectedLanguage = this.value;
-          if (selectedLanguage === 'en') {
-              window.location.href = '/';
-          } else if (selectedLanguage === 'es') {
-              window.location.href = '/esp';
-      }
-      });
+        document.getElementById('languageSelect').addEventListener('change', function () {
+            var selectedLanguage = this.value;
+            if (selectedLanguage === 'en') {
+                window.location.href = '/';
+            } else if (selectedLanguage === 'es') {
+                window.location.href = '/esp';
+        }
+        });
 
-      function getLanguagePage() {
-          var url = window.location.href;
-          return url.includes('/esp') ? 'es' : 'en';
-      }
+        function getLanguagePage() {
+            var url = window.location.href;
+            return url.includes('/esp') ? 'es' : 'en';
+        }
 
-  </script>
+    </script>
+    
 {% endblock %}
