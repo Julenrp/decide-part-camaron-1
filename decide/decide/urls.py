@@ -27,6 +27,7 @@ urlpatterns = [
     path('doc/', schema_view),
     path('', HomeView.as_view()),
     path('esp/', HomeViewEsp.as_view()),
+    path('alm/', HomeViewAlm.as_view()),
     path('gateway/', include('gateway.urls')),
 ]
 

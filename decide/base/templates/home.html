@@ -8,17 +8,17 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 <style>
     body {
-      background-color: #f5f5f5; /* Light gray background color */
+      background-color: #f5f5f5; 
       font-family: 'Arial', sans-serif;
     }
 
     .jumbotron {
-      background: linear-gradient(to right, #3498db, #1abc9c); /* Gradient background with Bootstrap primary and success colors */
+      background: linear-gradient(to right, #3498db, #1abc9c); 
       color: #fff;
     }
 
     .section-header {
-      background-color: #e74c3c; /* Bootstrap danger color */
+      background-color: #e74c3c; 
       color: #fff;
       padding: 10px;
       margin-bottom: 20px;
@@ -66,7 +66,6 @@
 {% endblock %}
 
 {% block content %}
-<!-- Contenedor para el mensaje de bienvenida -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <a class="navbar-brand" href="/">DECIDE </a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -97,6 +96,7 @@
                 <select class="language-dropdown" id="languageSelect">
                     <option value="en">English</option>
                     <option value="es">Español</option>
+                    <option value="de">Deutsch</option>
                
                 </select>
             </li>
@@ -240,12 +240,21 @@
               window.location.href = '/';
           } else if (selectedLanguage === 'es') {
               window.location.href = '/esp';
-      }
+          } else if(selectedLanguage === 'de'){
+              window.location.href = '/alm'
+          }
+      
       });
 
       function getLanguagePage() {
           var url = window.location.href;
-          return url.includes('/esp') ? 'es' : 'en';
+          if(url.includes('/esp')){
+            return 'es';
+          }else if( url.includes('alm')){
+            return 'de';
+          }else{
+            return 'es';
+          }
       }
 
   </script>
