@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'gateway',
     'crispy_forms',
     'crispy_bootstrap4',
-    'authentication'
 ]
 
 REST_FRAMEWORK = {
