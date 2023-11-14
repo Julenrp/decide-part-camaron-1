@@ -26,6 +26,9 @@ class HomeViewEsp(TemplateView):
 class HomeViewAlm(TemplateView):
     template_name = 'homeale.html'
 
+class HomeViewFra(TemplateView):
+    template_name = 'homefra.html'
+
 
 
     

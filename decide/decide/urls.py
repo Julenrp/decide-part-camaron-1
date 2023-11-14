@@ -28,6 +28,7 @@ urlpatterns = [
     path('', HomeView.as_view()),
     path('esp/', HomeViewEsp.as_view()),
     path('alm/', HomeViewAlm.as_view()),
+    path('fra/', HomeViewFra.as_view()),
     path('gateway/', include('gateway.urls')),
 ]
 

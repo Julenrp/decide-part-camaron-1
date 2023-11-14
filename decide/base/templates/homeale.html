@@ -97,6 +97,7 @@
                     <option value="en">English</option>
                     <option value="es">Español</option>
                     <option value="de">Deutsch</option>
+                    <option value="fr">Français</option>
                 </select>
             </li>
 
@@ -242,15 +243,22 @@
                 window.location.href = '/';
             } else if (selectedLanguage === 'es') {
                 window.location.href = '/esp';
-        }
+            } else if(selectedLanguage === 'de'){
+                window.location.href = '/alm'
+            } else if(selectedLanguage === 'fr'){
+                window.location.href = '/fra'
+            }
+        
         });
-
+  
         function getLanguagePage() {
           var url = window.location.href;
           if(url.includes('/esp')){
             return 'es';
           }else if( url.includes('/alm')){
             return 'de';
+          }else if( url.includes('/fra')){
+            return 'fr';
           }else{
             return 'en';
           }
