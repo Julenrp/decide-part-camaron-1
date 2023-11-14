@@ -94,8 +94,9 @@
             <li class="nav-item">
                 <a class="nav-link language-dropdown-link" href="#" onclick="toggleLanguageDropdown()">Idiomas</a>
                 <select class="language-dropdown" id="languageSelect">
-                    <option value="en">English</option>
-                    <option value="es">Español</option>
+                  <option value="en">English</option>
+                  <option value="es">Español</option>
+                  <option value="de">Deutsch</option>
                 </select>
             </li>
 
@@ -247,14 +248,14 @@
         });
   
         function getLanguagePage() {
-            var url = window.location.href;
-            if(url.includes('/esp')){
-              return 'es';
-            }else if( url.includes('alm')){
-              return 'de';
-            }else{
-              return 'es';
-            }
+          var url = window.location.href;
+          if(url.includes('/esp')){
+            return 'es';
+          }else if( url.includes('/alm')){
+            return 'de';
+          }else{
+            return 'en';
+          }
         }
   
     </script>

@@ -246,8 +246,14 @@
         });
 
         function getLanguagePage() {
-            var url = window.location.href;
-            return url.includes('/esp') ? 'es' : 'en';
+          var url = window.location.href;
+          if(url.includes('/esp')){
+            return 'es';
+          }else if( url.includes('/alm')){
+            return 'de';
+          }else{
+            return 'en';
+          }
         }
 
     </script>
