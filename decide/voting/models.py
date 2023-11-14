@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from base import mods
 from base.models import Auth, Key
 
+from census.models import Census
 
 class Question(models.Model):
     desc = models.TextField()
@@ -32,6 +33,7 @@ class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
     question = models.ForeignKey(Question, related_name='voting', on_delete=models.CASCADE)
+    census = models.ForeignKey(Census, null=True, on_delete=models.CASCADE)
 
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
