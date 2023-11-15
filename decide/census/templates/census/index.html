@@ -2,28 +2,17 @@
     <h1>Censo</h1>
 
     <nav>
-        <form>
-            <label for="census_id">Filter by census</label>
+        <form action="{% url 'search_results' %}" method="GET">
+            <label for="census_id">Buscar por censo</label> <br>
             <select id="census_id" name="census_id">
-                {% for census in census_list %}
-                    <option value="{{ census.id }}">{{ census.name }}</li>
-                {% endfor %}
+                <option value="1">Censo1</option>
+                <option value="2">Censo2</option>
+                <option value="3">Censo3</option>
+               <!--- {% for census in census_list %}
+                    <option value="{{ census.id }}">{{ census.name }}</option>
+                {% endfor %}--->
             </select>
             <button>Buscar</button>
         </form>
     </nav>
-    <table>
-        <thead>
-            <tr>
-                <th>Nombre de usuario</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user in users_in_census %}
-                <tr>
-                    <td>{{ user.username }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
 </article>

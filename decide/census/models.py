@@ -8,7 +8,7 @@ class Census(models.Model):
     has_voted = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.name    
+        return self.name   
 
 
 class Votation(models.Model):

@@ -1,7 +1,9 @@
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponseRedirect
+from django.http import HttpRequest
 from django.shortcuts import render
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView,ListView
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -13,22 +15,36 @@ from rest_framework.status import (
 )
 
 from base.perms import UserIsStaff
+from django.contrib.auth.models import User
 from .models import Census
+from .forms import CensusForm
 
+class CensusResultsView(ListView):
+    model = Census
+    template_name = 'census/results.html'
+
+    def get_queryset(self):  # new
+        query = self.request.GET.get("census_id")
+        census = Census.objects.get(id=query)
+        object_list = census.users.all()
+       
+        return object_list
 
 class CensusView(TemplateView):
+    model = Census
     template_name = 'census/index.html'
-    permission_classes = (UserIsStaff,)
+    queryset = Census.objects.all()
+
 
     def list(self, request):
-        print('Hola maricon')
-        census_list = Census.objects.all()
-        context = {'census_list': census_list}
-        print(context)
+        queryset = Census.objects.all()
+        context = {'census_list': queryset}
 
-        if request.method == "POST":
-            census_id = request.POST.get('census_id')
+        if request.method == "GET":
+            form_class = CensusForm(request.POST)
+            census_id = form_class.census_id
             voters = Census.objects.filter(id=census_id)
             context['users_in_census'] = voters
         return render(request, "census/index.html", context=context)
+
 
