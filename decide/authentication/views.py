@@ -25,16 +25,16 @@ class GetUserView(APIView):
         return Response(UserSerializer(tk.user, many=False).data)
 
 
-class LogoutView(APIView):
-    def post(self, request):
-        key = request.data.get('token', '')
-        try:
-            tk = Token.objects.get(key=key)
-            tk.delete()
-        except ObjectDoesNotExist:
-            pass
+# class LogoutView(APIView):
+#     def post(self, request):
+#         key = request.data.get('token', '')
+#         try:
+#             tk = Token.objects.get(key=key)
+#             tk.delete()
+#         except ObjectDoesNotExist:
+#             pass
 
-        return Response({})
+#         return Response({})
 
 class VRegistro(View):
     def get(self, request):
@@ -51,6 +51,10 @@ class VRegistro(View):
             for mensaje in form.error_messages:
                 messages.error(request, form.error_messages[mensaje])
             return render(request, "autentication/registro.html", {"form":form})
+
+def cerrarSession(request):
+    logout(request)
+    return redirect('Home')
 
 # class RegisterView(APIView):
 #     def post(self, request):
