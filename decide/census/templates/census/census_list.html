@@ -1,0 +1,12 @@
+<article>
+    <h1>Busca el censo</h1>
+    <form action="{% url 'search_results' %}" method="GET">
+        <label for="census_id">Buscar por censo</label> <br>
+        <select id="census_id" name="census_id">
+            {% for census in census_list %}
+                <option value="{{ census.id }}">{{ census.name }}</option>
+            {% endfor %}
+        </select>
+        <button>Buscar</button>
+    </form>
+</article>

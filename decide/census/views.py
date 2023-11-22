@@ -3,6 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect
 from django.http import HttpRequest
 from django.shortcuts import render
+from django.contrib import sessions
 from django.views.generic import TemplateView,ListView
 from rest_framework import generics
 from rest_framework.response import Response
@@ -19,6 +20,14 @@ from django.contrib.auth.models import User
 from .models import Census
 from .forms import CensusForm
 
+class CensusForm(ListView):
+    model = Census
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['name'] = Census.objects.all()
+        return context
+
 class CensusResultsView(ListView):
     model = Census
     template_name = 'census/results.html'
@@ -29,22 +38,3 @@ class CensusResultsView(ListView):
         object_list = census.users.all()
        
         return object_list
-
-class CensusView(TemplateView):
-    model = Census
-    template_name = 'census/index.html'
-    queryset = Census.objects.all()
-
-
-    def list(self, request):
-        queryset = Census.objects.all()
-        context = {'census_list': queryset}
-
-        if request.method == "GET":
-            form_class = CensusForm(request.POST)
-            census_id = form_class.census_id
-            voters = Census.objects.filter(id=census_id)
-            context['users_in_census'] = voters
-        return render(request, "census/index.html", context=context)
-
-
