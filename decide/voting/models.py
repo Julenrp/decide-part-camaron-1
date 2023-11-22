@@ -33,7 +33,7 @@ class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
     question = models.ForeignKey(Question, related_name='voting', on_delete=models.CASCADE)
-    census = models.ForeignKey(Census, null=True, on_delete=models.CASCADE)
+    census = models.ForeignKey(Census, related_name='census_id', null=True, on_delete=models.CASCADE)
 
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)

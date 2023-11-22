@@ -18,6 +18,7 @@ from rest_framework.status import (
 from base.perms import UserIsStaff
 from django.contrib.auth.models import User
 from .models import Census
+from voting.models import Voting
 from .forms import CensusForm
 
 class CensusForm(ListView):
@@ -32,9 +33,13 @@ class CensusResultsView(ListView):
     model = Census
     template_name = 'census/results.html'
 
-    def get_queryset(self):  # new
+    def get_context_data(self,*args,**kwargs):  # new
         query = self.request.GET.get("census_id")
         census = Census.objects.get(id=query)
         object_list = census.users.all()
-       
-        return object_list
+        voting_list = Voting.objects.filter(census=query)
+        context = super(CensusResultsView, self).get_context_data(*args,**kwargs)
+        context['object_list'] = object_list
+        context['voting_list'] = voting_list
+        print(context)
+        return context

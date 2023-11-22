@@ -12,7 +12,30 @@
                 <tr>
                     <td>{{ user.username }}</td>
                 </tr>
+                {% empty %}
+                <tr>
+                    <td>No hay usuarios aún en este censo.</td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>
+    <br>   
+    <table>
+        <thead>
+            <tr>
+                <th>Votaciones del Censo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for voting in voting_list %}
+                <tr>
+                    <td><a href="http://localhost:8000/booth/{{voting.id}}">{{ voting.name }}</a></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td>No hay votaciones aún en este censo.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table> 
 </article>
