@@ -1,41 +1,117 @@
-<article>
-    <h1>Censo</h1>
+<html>
+    <head>
+        {% load static %}
 
-    <table>
-        <thead>
-            <tr>
-                <th>Nombre de usuario</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user in object_list %}
+    <!-- Bootstrap -->
+    <link href="{% static 'inicio/vendor/bootstrap/css/bootstrapp.min.css'%}" rel="stylesheet">
+
+     <!-- Fonts -->
+    
+     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300&display=swap" rel="stylesheet"> 
+     <link href="https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i" rel="stylesheet">
+     
+
+    <!-- Styles -->
+    <link href="{% static 'inicio/css/gestion.css'%}" rel="stylesheet">
+    </head>
+
+    <body>
+
+        <h1 class="site-heading text-center text-white d-none d-lg-block">
+      
+            <span class="site-heading-lower" style="color: blue;">Censo {{ censo_id }}</span>
+      
+            <script>
+                // Detén el desplazamiento después de un cierto tiempo (en este caso, después de 3 segundos)
+                setTimeout(function() {
+                    var marquee = document.querySelector('marquee');
+                    marquee.stop();
+                }, 2000); // 3000 milisegundos = 3 segundos
+            </script>
+        </h1>
+
+  <!-- Contenido -->
+  {% block content %}
+
+    <article>
+        <table>
+            <thead>
                 <tr>
-                    <td>{{ user.username }}</td>
+                    <th>Nombre de usuario</th>
                 </tr>
+            </thead>
+            <tbody>
+                {% for user in object_list %}
+                    <tr>
+                        <td>· {{ user.username }}</td>
+                    </tr>
                 {% empty %}
+                    <tr>
+                        <td>No hay usuarios aún en este censo.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br><hr style="width:40%;text-align:left;margin-left:0;border-width:1;color: rgb(14, 14, 88);">
+        <table>
+            <thead>
                 <tr>
-                    <td>No hay usuarios aún en este censo.</td>
+                    <th>Votaciones del Censo</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <br>   
-    <table>
-        <thead>
-            <tr>
-                <th>Votaciones del Censo</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for voting in voting_list %}
-                <tr>
-                    <td><a href="http://localhost:8000/booth/{{voting.id}}">{{ voting.name }}</a></td>
-                </tr>
+            </thead>
+            <tbody>
+                {% for voting in voting_list %}
+                    <tr>
+                        <td>· <a href="http://localhost:8000/booth/{{voting.id}}">{{ voting.name }}</a></td>
+                    </tr>
                 {% empty %}
-                <tr>
-                    <td>No hay votaciones aún en este censo.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table> 
-</article>
+                    <tr>
+                        <td>No hay votaciones aún en este censo.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table> 
+    </article>
+    <br><hr style="width:40%;text-align:left;margin-left:0;border-width:1;color: rgb(14, 14, 88);">
+        
+
+{% endblock%}
+
+    <!-- Footer -->
+    <footer class="footer text-faded text-center py-5">
+      <div class="container">
+        <p class="m-0">
+	        <a href="#" class="link">
+	          <span class="fa-stack fa-lg">
+	            <i class="fa fa-circle fa-stack-2x"></i>
+	            <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+	          </span>
+	        </a>
+	        <a href="#" class="link">
+	          <span class="fa-stack fa-lg">
+	            <i class="fa fa-circle fa-stack-2x"></i>
+	            <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+	          </span>
+	        </a>
+	        <a href="#" class="link">
+	          <span class="fa-stack fa-lg">
+	            <i class="fa fa-circle fa-stack-2x"></i>
+	            <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+	          </span>
+	        </a>
+	    </p>
+        <p class="m-0 mbt">
+        	<h5 style="color: rgb(14, 14, 88);">Telefono de Contacto: +34 123456789</h5>
+        	<h6 style="color: rgb(14, 14, 88);">Dirección Tienda Física: C. Francisco Pizarro, s/n, 16610 Casas de Fernando Alonso, Cuenca</h6>
+		</p>
+        <p class="m-0 mbt1">&copy; Decide 2023</p>
+      </div>
+	</footer>
+
+    <!-- Bootstrap -->
+    <script src="{% static 'inicio/vendor/jquery/jquery.min.js'%}"></script>
+    <script src="{% static 'inicio/vendor/bootstrap/js/bootstrap.bundle.min.js'%}"></script>
+
+    </body>
+
+</html>

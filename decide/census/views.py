@@ -41,5 +41,6 @@ class CensusResultsView(ListView):
         context = super(CensusResultsView, self).get_context_data(*args,**kwargs)
         context['object_list'] = object_list
         context['voting_list'] = voting_list
+        context['censo_id'] = query
         print(context)
         return context

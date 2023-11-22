@@ -1,12 +1,91 @@
+<html>
+    <head>
+        {% load static %}
+
+    <!-- Bootstrap -->
+    <link href="{% static 'inicio/vendor/bootstrap/css/bootstrapp.min.css'%}" rel="stylesheet">
+
+     <!-- Fonts -->
+    
+     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300&display=swap" rel="stylesheet"> 
+     <link href="https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i" rel="stylesheet">
+     
+
+    <!-- Styles -->
+    <link href="{% static 'inicio/css/gestion.css'%}" rel="stylesheet">
+    </head>
+
+    <body>
+
+        <h1 class="site-heading text-center text-white d-none d-lg-block">
+      
+            <span class="site-heading-lower" style="color: blue;">Buscador de Censos</span>
+      
+            <script>
+                // Detén el desplazamiento después de un cierto tiempo (en este caso, después de 3 segundos)
+                setTimeout(function() {
+                    var marquee = document.querySelector('marquee');
+                    marquee.stop();
+                }, 2000); // 3000 milisegundos = 3 segundos
+            </script>
+        </h1>
+
+  <!-- Contenido -->
+  {% block content %}
+
+
 <article>
-    <h1>Busca el censo</h1>
+    <h1>Seleccione el censo</h1>
     <form action="{% url 'search_results' %}" method="GET">
-        <label for="census_id">Buscar por censo</label> <br>
-        <select id="census_id" name="census_id">
+        <label for="census_id"></label> <br>
+        <select id="census_id" name="census_id" style="border: 1px solid; border-color: rgb(14, 14, 88);padding: 8px 16px;background-color: rgb(228, 228, 255);font-size: 100%">
             {% for census in census_list %}
                 <option value="{{ census.id }}">{{ census.name }}</option>
             {% endfor %}
         </select>
-        <button>Buscar</button>
+        <button style="padding: 8px 16px;font-size: 100%;background-color: rgb(204, 204, 255);">Buscar</button>
     </form>
 </article>
+<br><hr style="width:40%;text-align:left;margin-left:0;border-width:1;color: rgb(14, 14, 88);">
+        
+
+{% endblock%}
+
+    <!-- Footer -->
+    <footer class="footer text-faded text-center py-5">
+      <div class="container">
+        <p class="m-0">
+	        <a href="#" class="link">
+	          <span class="fa-stack fa-lg">
+	            <i class="fa fa-circle fa-stack-2x"></i>
+	            <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+	          </span>
+	        </a>
+	        <a href="#" class="link">
+	          <span class="fa-stack fa-lg">
+	            <i class="fa fa-circle fa-stack-2x"></i>
+	            <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+	          </span>
+	        </a>
+	        <a href="#" class="link">
+	          <span class="fa-stack fa-lg">
+	            <i class="fa fa-circle fa-stack-2x"></i>
+	            <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+	          </span>
+	        </a>
+	    </p>
+        <p class="m-0 mbt">
+        	<h5 style="color: rgb(14, 14, 88);">Telefono de Contacto: +34 123456789</h5>
+        	<h6 style="color: rgb(14, 14, 88);">Dirección Tienda Física: C. Francisco Pizarro, s/n, 16610 Casas de Fernando Alonso, Cuenca</h6>
+		</p>
+        <p class="m-0 mbt1">&copy; Decide 2023</p>
+      </div>
+	</footer>
+
+    <!-- Bootstrap -->
+    <script src="{% static 'inicio/vendor/jquery/jquery.min.js'%}"></script>
+    <script src="{% static 'inicio/vendor/bootstrap/js/bootstrap.bundle.min.js'%}"></script>
+
+    </body>
+
+</html>
