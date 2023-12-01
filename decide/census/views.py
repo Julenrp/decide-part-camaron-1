@@ -15,6 +15,7 @@ from base.perms import UserIsStaff
 from .models import Census
 from django.http import HttpResponse
 import csv
+import json
 
 
 
@@ -62,12 +63,45 @@ class ExportCensusCsv(View):
         return response
     
     def export_csv(self, census_data):
+        if not census_data:
+            return HttpResponse('No data to export excel')
+        
+        counter = self.request.session.get('download_counter_csv', 1)
+        filename = f"census{counter}.csv"
+        self.request.session['download_counter_csv'] = counter + 1
+
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition']= 'attachment; filename="census.csv"'
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
         writer = csv.writer(response)
         writer.writerow(['voting_id', 'voter_id'])
 
         for data in census_data:
             writer.writerow([data.voting_id, data.voter_id])
-        
+
         return response
+
+class ExportCensusJson(View):
+    def get (self, request):
+        census_data = Census.objects.all()
+        response = self.export_json(census_data)
+        return response
+    
+    def export_json(self, census_data):
+        if not census_data:
+            return HttpResponse('No data to export excel')
+        
+        data = []
+        for c in census_data:
+            data.append({'voting_id': c.voting_id, 'voter_id': c.voter_id})
+
+        data_json = json.dumps(data)
+        counter = self.request.session.get('download_counter', 1)
+        filename = f"census{counter}.json"
+        self.request.session['download_counter'] = counter + 1
+
+        response = HttpResponse(data_json, content_type='text/json')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+        return response
+
+        
