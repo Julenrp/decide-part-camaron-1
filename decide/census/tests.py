@@ -1,3 +1,4 @@
+import csv
 import json
 import tempfile
 import os
@@ -234,3 +235,40 @@ class ExportCensusJSONTest(BaseExportTestCase):
         self.assertEqual(exported_data['voter_id'], census_create.voter_id)
         expected_keys = ['voting_id', 'voter_id']
         self.assertCountEqual(exported_data.keys(), expected_keys)
+
+class ExportCensusCSVTest(BaseExportTestCase):
+
+    def testExportCsv(self):
+        url_exportacion_csv = reverse('export_census_csv')
+        response = self.client.get(url_exportacion_csv)
+        self.assertEqual(response.status_code, 200)
+
+        lineas_respuesta_csv = response.content.decode('utf-8').splitlines()
+        encabezados = ['voting_id', 'voter_id']
+        self.assertEqual(lineas_respuesta_csv[0].split(','), encabezados)
+
+    def testExportDataCsv(self):
+        url_exportacion_csv = reverse('export_census_csv')
+        response = self.client.get(url_exportacion_csv)
+        self.assertEqual(response.status_code, 200)
+
+        # Utilizamos csv.reader para manejar automáticamente las diferencias de formato en las nuevas líneas
+        lineas_respuesta_csv = list(csv.reader(response.content.decode('utf-8').splitlines()))
+
+        # Creamos un archivo temporal con extensión .csv para almacenar los datos exportados
+        with tempfile.NamedTemporaryFile(mode='w+', suffix='.csv', delete=False) as archivo_temporal:
+            # Realizamos otra solicitud GET a la URL de exportación y escribimos la respuesta en el archivo temporal
+            response_segunda = self.client.get(url_exportacion_csv)
+            archivo_temporal.write(response_segunda.content.decode('utf-8'))
+
+        try:
+            self.assertEqual(response_segunda.status_code, 200)
+
+
+        finally:
+            os.remove(archivo_temporal.name)
+
+    
+
+
+        
