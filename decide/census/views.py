@@ -67,7 +67,7 @@ class ExportCensusCsv(View):
             return HttpResponse('No data to export excel')
         
         counter = self.request.session.get('download_counter_csv', 1)
-        filename = f"census{counter}.csv"
+        filename = f"censusv{counter}.csv"
         self.request.session['download_counter_csv'] = counter + 1
 
         response = HttpResponse(content_type='text/csv')
@@ -96,7 +96,7 @@ class ExportCensusJson(View):
 
         data_json = json.dumps(data)
         counter = self.request.session.get('download_counter', 1)
-        filename = f"census{counter}.json"
+        filename = f"censusv{counter}.json"
         self.request.session['download_counter'] = counter + 1
 
         response = HttpResponse(data_json, content_type='text/json')
