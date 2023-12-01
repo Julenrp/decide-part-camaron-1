@@ -1,5 +1,6 @@
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+from django.views import View
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -12,6 +13,10 @@ from rest_framework.status import (
 
 from base.perms import UserIsStaff
 from .models import Census
+from django.http import HttpResponse
+import csv
+
+
 
 
 class CensusCreate(generics.ListCreateAPIView):
@@ -49,3 +54,20 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
         except ObjectDoesNotExist:
             return Response('Invalid voter', status=ST_401)
         return Response('Valid voter')
+    
+class ExportCensusCsv(View):
+    def get (self, request):
+        census_data = Census.objects.all()
+        response = self.export_csv(census_data)
+        return response
+    
+    def export_csv(self, census_data):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition']= 'attachment; filename="census.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['voting_id', 'voter_id'])
+
+        for data in census_data:
+            writer.writerow([data.voting_id, data.voter_id])
+        
+        return response
