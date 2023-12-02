@@ -264,11 +264,29 @@ class ExportCensusCSVTest(BaseExportTestCase):
         try:
             self.assertEqual(response_segunda.status_code, 200)
 
+            with open(archivo_temporal.name, 'r') as archivo:
+                contenido_archivo_temporal = list(csv.reader(archivo))
+
+            # Comparamos cada conjunto de datos exportados con las instancias del censo
+            for indice, datos_censo in enumerate(self.census_data):
+                if indice + 1 < len(lineas_respuesta_csv):
+                    self.assertCheckCreateCensusDataEqualCensusData(lineas_respuesta_csv[indice + 1], datos_censo)
+
+                if indice + 1 < len(contenido_archivo_temporal):
+                    self.assertCheckCreateCensusDataEqualCensusData(contenido_archivo_temporal[indice + 1], datos_censo)
 
         finally:
             os.remove(archivo_temporal.name)
 
-    
+    def assertCheckCreateCensusDataEqualCensusData(self, actual_data, census_create):
+        expected_data = [
+            str(census_create['voting_id']),
+            str(census_create['voter_id']),
+        ]
+
+        # Comparar los valores en las posiciones 0 y 1
+        self.assertEqual(expected_data[0], actual_data[0].strip())  # Comparar voting_id
+        self.assertEqual(expected_data[1], actual_data[1].strip())  # Comparar voter_id
 
 
         
