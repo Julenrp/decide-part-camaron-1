@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIClient
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.urls import reverse
+from .forms import FormularioPeticion
 
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -164,3 +166,58 @@ class CensusTest(StaticLiveServerTestCase):
 
         self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[3]/div/div[1]/div/form/div/p').text == 'Please correct the errors below.')
         self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/census/census/add")
+
+
+
+class PeticionCensoTests(TestCase):
+    def test_peticion_censo_envio_exitoso(self):
+        datos_formulario = {
+            'nombre': 'Nombre Ejemplo',
+            'email': 'ejemplo@email.com',
+            'contenido': 'Contenido de ejemplo',
+        }
+
+        response = self.client.post(reverse('peticion'), datos_formulario)
+        
+        self.assertEqual(response.status_code, 302)
+
+    def test_peticion_censo_envio_fallido_email(self):
+        datos_formulario = {
+            'nombre': 'Nombre Ejemplo',
+            'contenido': 'Contenido de ejemplo',
+        }
+
+        response = self.client.post(reverse('peticion'), datos_formulario)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'This field is required.')
+
+    def test_peticion_censo_envio_fallido_nombre(self):
+        datos_formulario = {
+            'email': 'ejemplo@email.com',
+            'contenido': 'Contenido de ejemplo',
+        }
+
+        response = self.client.post(reverse('peticion'), datos_formulario)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'This field is required.')
+    
+    def test_peticion_censo_envio_fallido_contenido(self):
+        datos_formulario = {
+            'nombre': 'Nombre Ejemplo',
+            'email': 'ejemplo@email.com',
+            
+        }
+
+        response = self.client.post(reverse('peticion'), datos_formulario)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'This field is required.')
+
+
+    def test_renderizacion_correcta_de_template(self):
+        response = self.client.get(reverse('peticion'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'peticion/peticion.html')
+
