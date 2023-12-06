@@ -1,3 +1,7 @@
+import json
+from django.views.generic import TemplateView
+from django.conf import settings
+from django.http import Http404
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from django.views import View
@@ -11,12 +15,19 @@ from rest_framework.status import (
         HTTP_409_CONFLICT as ST_409
 )
 
+from base import mods
 from base.perms import UserIsStaff
 from .models import Census
+
 from django.http import HttpResponse
 import csv
 import json
 
+
+
+from django.shortcuts import render, redirect
+from .forms import FormularioPeticion
+from django.core.mail import EmailMessage
 
 
 
@@ -55,6 +66,7 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
         except ObjectDoesNotExist:
             return Response('Invalid voter', status=ST_401)
         return Response('Valid voter')
+
     
 class ExportCensusCsv(View):
     def get (self, request):
@@ -105,3 +117,28 @@ class ExportCensusJson(View):
         return response
 
         
+
+
+
+def peticionCenso(request):
+    formulario_Peticion = FormularioPeticion()
+
+    if request.method == "POST":
+        formulario_Peticion = FormularioPeticion(data=request.POST)
+        if formulario_Peticion.is_valid():
+            nombre = request.POST.get("nombre")
+            email = request.POST.get("email")
+            contenido = request.POST.get("contenido")
+            email2 = EmailMessage("Peticion de censo","El usuario con nombre {} y correo {} solicita:\n\n{}".format(nombre, email, contenido),"",["nanomotors33@gmail.com"],reply_to=[email])
+            try:
+                email2.send()
+                return redirect("http://127.0.0.1:8000/census/peticion/?valido")
+            except:
+                return redirect("http://127.0.0.1:8000/census/peticion/?novalido")
+
+    return render(request, "peticion/peticion.html", {"miFormulario":formulario_Peticion})
+
+    
+class CensusView(TemplateView):
+    template_name = 'census.html'
+
