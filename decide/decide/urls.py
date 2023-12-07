@@ -30,6 +30,7 @@ urlpatterns = [
     path('alm/', HomeViewAlm.as_view()),
     path('fra/', HomeViewFra.as_view()),
     path('gateway/', include('gateway.urls')),
+
     path('authentication/', include('authentication.urls')),
     path('census/', include('census.urls')),
 
