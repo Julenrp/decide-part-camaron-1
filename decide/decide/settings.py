@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_swagger',
     'gateway',
-    
+    'crispy_forms',
+    'crispy_bootstrap4',
 ]
 
 REST_FRAMEWORK = {
@@ -183,6 +184,12 @@ if os.path.exists("config.jsonnet"):
 INSTALLED_APPS = INSTALLED_APPS + MODULES
 
 
+
+# crispy_form
+
+CRISPY_ALLOWED_TEMPLATE_PACK = 'bootstrap4'
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
 #Configuración email
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -190,4 +197,5 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS= True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "nanomotors33@gmail.com"
+
 EMAIL_HOST_PASSWORD = "qwsn idwj hrcv tysh "

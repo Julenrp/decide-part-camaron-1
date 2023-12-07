@@ -1,0 +1,22 @@
+<html>
+    <head>
+        <title>
+            <h1 style="color: blue;"> Registro de Usuarios</h1>
+        </title>
+    </head>
+    <body>
+        <h1 style = "background-color: blue;color: aliceblue;text-align: center;"> Formulario de Registro</h1>
+        {% load crispy_forms_tags %}
+        <form method="post" action="" style="color:black">
+            {% csrf_token %}
+            <div style="width: 75%; margin: auto;">
+                {{form|crispy}}
+                <button type="submit" class="btn btn-success"> Resgistrate</button>
+             </div>
+        </form>
+
+    </body>
+
+
+</html>
+
