@@ -17,7 +17,7 @@ from selenium.webdriver.common.keys import Keys
 from .models import Census
 from base import mods
 from base.tests import BaseTestCase
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 class BaseExportTestCase(TestCase):
     def setUp(self):

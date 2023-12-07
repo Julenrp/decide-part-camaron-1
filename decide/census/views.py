@@ -1,7 +1,5 @@
 import json
 from django.views.generic import TemplateView
-from django.conf import settings
-from django.http import Http404
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from django.views import View
@@ -14,8 +12,6 @@ from rest_framework.status import (
         HTTP_401_UNAUTHORIZED as ST_401,
         HTTP_409_CONFLICT as ST_409
 )
-
-from base import mods
 from base.perms import UserIsStaff
 from .models import Census
 
@@ -129,7 +125,8 @@ def peticionCenso(request):
             nombre = request.POST.get("nombre")
             email = request.POST.get("email")
             contenido = request.POST.get("contenido")
-            email2 = EmailMessage("Peticion de censo","El usuario con nombre {} y correo {} solicita:\n\n{}".format(nombre, email, contenido),"",["nanomotors33@gmail.com"],reply_to=[email])
+            email2 = EmailMessage("Peticion de censo","El usuario con nombre {} y correo {} solicita:\n\n{}"
+                                  .format(nombre, email, contenido),"",["nanomotors33@gmail.com"],reply_to=[email])
             try:
                 email2.send()
                 return redirect("http://127.0.0.1:8000/census/peticion/?valido")
