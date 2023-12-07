@@ -1,5 +1,8 @@
+import json
+from django.views.generic import TemplateView
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+from django.views import View
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -9,9 +12,19 @@ from rest_framework.status import (
         HTTP_401_UNAUTHORIZED as ST_401,
         HTTP_409_CONFLICT as ST_409
 )
-
 from base.perms import UserIsStaff
 from .models import Census
+
+from django.http import HttpResponse
+import csv
+import json
+
+
+
+from django.shortcuts import render, redirect
+from .forms import FormularioPeticion
+from django.core.mail import EmailMessage
+
 
 
 class CensusCreate(generics.ListCreateAPIView):
@@ -49,3 +62,80 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
         except ObjectDoesNotExist:
             return Response('Invalid voter', status=ST_401)
         return Response('Valid voter')
+
+    
+class ExportCensusCsv(View):
+    def get (self, request):
+        census_data = Census.objects.all()
+        response = self.export_csv(census_data)
+        return response
+    
+    def export_csv(self, census_data):
+        if not census_data:
+            return HttpResponse('No data to export excel')
+        
+        counter = self.request.session.get('download_counter_csv', 1)
+        filename = f"censusv{counter}.csv"
+        self.request.session['download_counter_csv'] = counter + 1
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        writer = csv.writer(response)
+        writer.writerow(['voting_id', 'voter_id'])
+
+        for data in census_data:
+            writer.writerow([data.voting_id, data.voter_id])
+
+        return response
+
+class ExportCensusJson(View):
+    def get (self, request):
+        census_data = Census.objects.all()
+        response = self.export_json(census_data)
+        return response
+    
+    def export_json(self, census_data):
+        if not census_data:
+            return HttpResponse('No data to export excel')
+        
+        data = []
+        for c in census_data:
+            data.append({'voting_id': c.voting_id, 'voter_id': c.voter_id})
+
+        data_json = json.dumps(data)
+        counter = self.request.session.get('download_counter', 1)
+        filename = f"censusv{counter}.json"
+        self.request.session['download_counter'] = counter + 1
+
+        response = HttpResponse(data_json, content_type='text/json')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+        return response
+
+        
+
+
+
+def peticionCenso(request):
+    formulario_Peticion = FormularioPeticion()
+
+    if request.method == "POST":
+        formulario_Peticion = FormularioPeticion(data=request.POST)
+        if formulario_Peticion.is_valid():
+            nombre = request.POST.get("nombre")
+            email = request.POST.get("email")
+            contenido = request.POST.get("contenido")
+            email2 = EmailMessage("Peticion de censo","El usuario con nombre {} y correo {} solicita:\n\n{}"
+                                  .format(nombre, email, contenido),"",["nanomotors33@gmail.com"],reply_to=[email])
+            try:
+                email2.send()
+                return redirect("http://127.0.0.1:8000/census/peticion/?valido")
+            except:
+                return redirect("http://127.0.0.1:8000/census/peticion/?novalido")
+
+    return render(request, "peticion/peticion.html", {"miFormulario":formulario_Peticion})
+
+    
+class CensusView(TemplateView):
+    template_name = 'census.html'
+
