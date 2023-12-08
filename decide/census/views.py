@@ -19,14 +19,15 @@ from base.perms import UserIsStaff
 from django.contrib.auth.models import User
 from .models import Census
 from voting.models import Voting
-from .forms import CensusForm
+from .forms import FormularioPeticion
 
-class CensusForm(ListView):
+class FormularioPeticion(ListView):
     model = Census
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['name'] = Census.objects.all()
+        censo = Census.objects.all()
+        context['name'] = sorted(censo, key=lambda obj: obj.name.lower())
         return context
 
 class CensusResultsView(ListView):
