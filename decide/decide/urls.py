@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework_swagger.views import get_swagger_view
 
+from .views import *
 
 schema_view = get_swagger_view(title='Decide API')
 
@@ -25,7 +26,15 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('census/', include('census.urls')),
     path('doc/', schema_view),
+    path('', HomeView.as_view()),
+    path('esp/', HomeViewEsp.as_view()),
+    path('alm/', HomeViewAlm.as_view()),
+    path('fra/', HomeViewFra.as_view()),
     path('gateway/', include('gateway.urls')),
+
+    path('authentication/', include('authentication.urls')),
+    path('census/', include('census.urls')),
+
 ]
 
 for module in settings.MODULES:
