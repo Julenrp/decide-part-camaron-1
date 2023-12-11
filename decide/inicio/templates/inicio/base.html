@@ -39,7 +39,7 @@
       
       <div style="text-align: right;margin-right: 100px;color: white;">
         {% if user.is_authenticated %}
-        Hola {{user.username}}&nbsp; &nbsp;<a href="{%url 'cerrarSesion' %}" style="color: whitesmoke;">Cerrar Sesión</a>
+        Hola {{user.username}}&nbsp; &nbsp;<a href="{%url 'logout' %}" style="color: whitesmoke;">Cerrar Sesión</a>
         {%else%}
         <a href="{%url 'Autenticacion'%}" style="color: whitesmoke;">Registrate</a>
         {%endif%}
