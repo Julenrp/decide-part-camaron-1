@@ -27,7 +27,7 @@ from voting.models import Voting
 
 
 
-class FormularioPeticion(ListView):
+class FormularioPeticions(ListView):
     model = Census
 
     def get_context_data(self, **kwargs):

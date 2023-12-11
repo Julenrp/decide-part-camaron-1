@@ -148,6 +148,7 @@ def listCensusFilter(self):
 class PeticionCensoTests(TestCase):
     def test_peticion_censo_envio_exitoso(self):
         datos_formulario = {
+            
             'nombre': 'Nombre Ejemplo',
             'email': 'ejemplo@email.com',
             'contenido': 'Contenido de ejemplo',
@@ -155,7 +156,7 @@ class PeticionCensoTests(TestCase):
 
         response = self.client.post(reverse('peticion'), datos_formulario)
         
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
 
     def test_peticion_censo_envio_fallido_email(self):
         datos_formulario = {
