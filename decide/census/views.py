@@ -107,12 +107,12 @@ class ExportCensusCsv(View):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         writer = csv.writer(response)
-        writer.writerow(['name', 'users'])
+        writer.writerow(['name', 'users', 'has_voted'])
 
         for data in census_data:
             # Convierte el objeto relacionado a una lista de valores
             users_list = list(data.users.values_list('username', flat=True)) if data.users.exists() else []
-            writer.writerow([data.name, ', '.join(users_list)])
+            writer.writerow([data.name, ', '.join(users_list), data.has_voted])
 
         return response
     
@@ -130,7 +130,7 @@ class ExportCensusJson(View):
         for c in census_data:
             # Convierte el objeto ManyRelatedManager a una lista de valores
             users_list = list(c.users.values_list('username', flat=True)) if c.users.exists() else []
-            data.append({'name': c.name, 'users': users_list})
+            data.append({'name': c.name, 'users': users_list,'has_voted': c.has_voted})
         data_json = json.dumps(data, indent=2)  # indent=2 para una salida JSON más legible
         counter = self.request.session.get('download_counter', 1)
         filename = f"censusv{counter}.json"
