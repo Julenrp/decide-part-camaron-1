@@ -61,15 +61,45 @@ class DefVoters(SequentialTaskSet):
 
     def on_quit(self):
         self.voter = None
+        
+class DefAutenticar(SequentialTaskSet):
+
+    def carga(self):
+        with open('autenticar.json') as json_file:
+            self.data = json.load(json_file)
+        self.datos = self.data
+
+    @task
+    def autenticar(self):
+        for i in range(1,19):
+            data = {'username': 'plr{i}', 'email': 'plr{i}@gmail.com', 'password': 'holamundo{i}'}
+            response = self.client.post("/authentication/", data)
+        try:
+            self.token = response.json()
+        except ValueError as e:
+            print(f"Error decodificando JSON: {e}")
+            print(f"Respuesta del servidor: {response.text}")
+
+    def on_quit(self):
+        self.datos = None
+
+        
+
+    
 
 class Visualizer(HttpUser):
     host = HOST
     tasks = [DefVisualizer]
     wait_time = between(3,5)
 
-
+class Autenticar(HttpUser):
+    host = HOST
+    tasks = [DefAutenticar]
+    wait_time = between(3,5)
 
 class Voters(HttpUser):
     host = HOST
     tasks = [DefVoters]
     wait_time= between(3,5)
+
+    
