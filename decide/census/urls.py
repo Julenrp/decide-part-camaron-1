@@ -6,7 +6,7 @@ from .views import *
 
 urlpatterns = [
 
-    path('', views.FormularioPeticions.as_view(), name="census_list"),
+    path('', views.CensusList.as_view(), name="census_list"),
     path("search/", views.CensusResultsView.as_view(), name="search_results"),
     path('', views.CensusCreate.as_view(), name='census_create'),
     path('<int:voting_id>/', views.CensusDetail.as_view(), name='census_detail'),

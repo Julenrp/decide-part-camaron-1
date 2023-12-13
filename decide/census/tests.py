@@ -21,28 +21,27 @@ from datetime import datetime, timezone
 
 class BaseExportTestCase(TestCase):
     def setUp(self):
-        self.census_data = [
+        #Creamos 4 censos distintos
+        def setUp(self):
+            self.census_data = [
             {
                 'name': f'Census_{i}',
-                'users': [],  
-                'has_voted': False,  
+                'users': [],
             }
             for i in range(1, 5)
-        ]
-
-        self.census_create = []
-
-        for data in self.census_data:
-            users_data = data.pop('users', []) 
-            census_instance = Census.objects.create(**data)
+            ]
+            self.census_create = []
             
-            census_instance.users.set(users_data)
-            
-            self.census_create.append(census_instance)
+            for data in self.census_data:
+                users_data = data.pop('users', []) 
+                census_instance = Census.objects.create(**data)
+                
+                census_instance.users.set(users_data)
+                
+                self.census_create.append(census_instance)
 
-        for i, censo in enumerate(self.census_create):
-            self.assertEqual(censo.name, f'Census_{i + 1}')
-
+            for i, censo in enumerate(self.census_create):
+                self.assertEqual(censo.name, f'Census_{i + 1}')
 
     def tearDown(self):
         Census.objects.all().delete()
@@ -91,8 +90,8 @@ class CensusTest(StaticLiveServerTestCase):
         self.cleaner.get(self.live_server_url+"/admin/census/census/add")
         self.cleaner.find_element(By.ID, "id_name").click()
         self.cleaner.find_element(By.ID, "id_name").send_keys("CensoTest")
-        self.cleaner.find_element(By.ID, "id_user_id").click()
-        self.cleaner.find_element(By.ID, "id_user_id").send_keys("Keys.ENTER")
+        self.cleaner.find_element(By.ID, "id_user").click()
+        self.cleaner.find_element(By.ID, "id_user").send_keys("Keys.ENTER")
         self.cleaner.find_element(By.NAME, "_save").click()
 
         self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/census/census")
@@ -111,8 +110,8 @@ class CensusTest(StaticLiveServerTestCase):
 
         self.cleaner.get(self.live_server_url+"/admin/census/census/add")
 
-        self.cleaner.find_element(By.ID, "id_user_id").click()
-        self.cleaner.find_element(By.ID, "id_user_id").send_keys("Keys.ENTER")
+        self.cleaner.find_element(By.ID, "id_user").click()
+        self.cleaner.find_element(By.ID, "id_user").send_keys("Keys.ENTER")
         self.cleaner.find_element(By.NAME, "_save").click()
 
         self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[3]/div/div[1]/div/form/div/p').text == 'Please correct the errors below.')
@@ -249,8 +248,7 @@ class ExportCensusJSONTest(BaseExportTestCase):
     def assertCheckCreatedCensusDataEqualsCensusData(self, exported_data, census_create):
         # Actualiza los nombres de los campos en base al nuevo modelo Census
         self.assertEqual(exported_data['name'], census_create.name)
-        self.assertEqual(exported_data['has_voted'], census_create.has_voted)
-        expected_keys = ['name', 'users', 'has_voted']
+        expected_keys = ['name', 'users']
         self.assertCountEqual(exported_data.keys(), expected_keys)
 
 class ExportCensusCSVTest(BaseExportTestCase):
@@ -261,7 +259,7 @@ class ExportCensusCSVTest(BaseExportTestCase):
         self.assertEqual(response.status_code, 200)
 
         lineas_respuesta_csv = response.content.decode('utf-8').splitlines()
-        encabezados = ['name', 'users', 'has_voted']
+        encabezados = ['name', 'users']
         self.assertEqual(lineas_respuesta_csv[0].split(','), encabezados)
 
     def testExportDataCsv(self):
@@ -285,5 +283,4 @@ class ExportCensusCSVTest(BaseExportTestCase):
 
         # Comparar los valores en las posiciones 0 y 1
         self.assertEqual(expected_data[0], actual_data[0].strip())  # Comparar name
-        self.assertEqual(expected_data[1], actual_data[1].strip())  # Comparar has_voted
 

@@ -6,7 +6,7 @@ import csv
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import sessions
 from django.views.generic import TemplateView,ListView
@@ -30,8 +30,7 @@ from .models import Census
 from voting.models import Voting
 
 
-
-class FormularioPeticions(ListView):
+class CensusList(ListView):
     model = Census
 
     def get_context_data(self, **kwargs):
@@ -59,37 +58,36 @@ class CensusResultsView(ListView):
 class CensusCreate(generics.ListCreateAPIView):
     permission_classes = (UserIsStaff,)
     def create(self, request, *args, **kwargs):
-        voting_id = request.data.get('voting_id')
-        voters = request.data.get('voters')
+        named = request.data.get('name')
+        users = request.data.get('users')
         try:
-            for voter in voters:
-                census = Census(voting_id=voting_id, voter_id=voter)
+            for u in users:
+                census = Census(name=named ,user=u)
                 census.save()
         except IntegrityError:
             return Response('Error try to create census', status=ST_409)
         return Response('Census created', status=ST_201)
 
     def list(self, request, *args, **kwargs):
-        voting_id = request.GET.get('voting_id')
-        voters = Census.objects.filter(voting_id=voting_id).values_list('voter_id', flat=True)
-        return Response({'voters': voters})
+        users = Census.objects.values_list('user_id', flat=True)
+        return Response({'users': users})
 
 
 class CensusDetail(generics.RetrieveDestroyAPIView):
 
-    def destroy(self, request, voting_id, *args, **kwargs):
-        voters = request.data.get('voters')
-        census = Census.objects.filter(voting_id=voting_id, voter_id__in=voters)
+    def destroy(self, request, *args, **kwargs):
+        query = self.request.GET.get("census_id")
+        census = Census.objects.get(id=query)
         census.delete()
-        return Response('Voters deleted from census', status=ST_204)
+        return Response('Users deleted from census', status=ST_204)
 
-    def retrieve(self, request, voting_id, *args, **kwargs):
-        voter = request.GET.get('voter_id')
+    def retrieve(self, request, *args, **kwargs):
+        query = self.request.GET.get("census_id")
         try:
-            Census.objects.get(voting_id=voting_id, voter_id=voter)
+            census = Census.objects.get(id=query)
         except ObjectDoesNotExist:
-            return Response('Invalid voter', status=ST_401)
-        return Response('Valid voter')
+            return Response('Invalid user', status=ST_401)
+        return Response('Valid user')
 
 
 class ExportCensusCsv(View):
@@ -109,12 +107,12 @@ class ExportCensusCsv(View):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         writer = csv.writer(response)
-        writer.writerow(['name', 'users', 'has_voted'])
+        writer.writerow(['name', 'users'])
 
         for data in census_data:
             # Convierte el objeto relacionado a una lista de valores
             users_list = list(data.users.values_list('username', flat=True)) if data.users.exists() else []
-            writer.writerow([data.name, ', '.join(users_list), data.has_voted])
+            writer.writerow([data.name, ', '.join(users_list)])
 
         return response
     
@@ -132,9 +130,7 @@ class ExportCensusJson(View):
         for c in census_data:
             # Convierte el objeto ManyRelatedManager a una lista de valores
             users_list = list(c.users.values_list('username', flat=True)) if c.users.exists() else []
-
-            data.append({'name': c.name, 'users': users_list, 'has_voted': c.has_voted})
-
+            data.append({'name': c.name, 'users': users_list})
         data_json = json.dumps(data, indent=2)  # indent=2 para una salida JSON más legible
         counter = self.request.session.get('download_counter', 1)
         filename = f"censusv{counter}.json"
@@ -152,12 +148,13 @@ def peticionCenso(request):
     if request.method == "POST":
         formulario_Peticion = FormularioPeticion(data=request.POST)
         if formulario_Peticion.is_valid():
+            census_name = request.POST.get("census_name")
             nombre = request.POST.get("nombre")
             email = request.POST.get("email")
             contenido = request.POST.get("contenido")
 
             email2 = EmailMessage("Peticion de censo","El usuario con nombre {} y correo {} solicita:\n\n{}"
-                                  .format(nombre, email, contenido),"",["nanomotors33@gmail.com"],reply_to=[email])
+                                  .format(census_name, nombre, email, contenido),"",["nanomotors33@gmail.com"],reply_to=[email])
 
             try:
                 email2.send()
