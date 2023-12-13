@@ -1,6 +1,8 @@
 import json
-import csv
 from django.views.generic import TemplateView
+from django.conf import settings
+from django.http import Http404
+import csv
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect
@@ -19,6 +21,8 @@ from rest_framework.status import (
         HTTP_401_UNAUTHORIZED as ST_401,
         HTTP_409_CONFLICT as ST_409
 )
+
+from base import mods
 from .forms import FormularioPeticion
 from base.perms import UserIsStaff
 from django.contrib.auth.models import User
@@ -53,7 +57,6 @@ class CensusResultsView(ListView):
 
 class CensusCreate(generics.ListCreateAPIView):
     permission_classes = (UserIsStaff,)
-
     def create(self, request, *args, **kwargs):
         named = request.data.get('name')
         users = request.data.get('users')
@@ -87,7 +90,6 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
         return Response('Valid user')
 
 
-    
 class ExportCensusCsv(View):
     def get(self, request):
         census_data = Census.objects.all()
@@ -113,7 +115,7 @@ class ExportCensusCsv(View):
             writer.writerow([data.name, ', '.join(users_list), data.has_voted])
 
         return response
-
+    
 class ExportCensusJson(View):
     def get(self, request):
         census_data = Census.objects.all()
@@ -128,9 +130,7 @@ class ExportCensusJson(View):
         for c in census_data:
             # Convierte el objeto ManyRelatedManager a una lista de valores
             users_list = list(c.users.values_list('username', flat=True)) if c.users.exists() else []
-            
             data.append({'name': c.name, 'users': users_list,'has_voted': c.has_voted})
-
         data_json = json.dumps(data, indent=2)  # indent=2 para una salida JSON más legible
         counter = self.request.session.get('download_counter', 1)
         filename = f"censusv{counter}.json"
@@ -142,7 +142,6 @@ class ExportCensusJson(View):
         return response
 
         
-
 def peticionCenso(request):
     formulario_Peticion = FormularioPeticion()
 

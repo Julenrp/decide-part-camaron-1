@@ -3,6 +3,7 @@ from . import views
 from .views import *
 
 
+
 urlpatterns = [
 
     path('', views.CensusList.as_view(), name="census_list"),

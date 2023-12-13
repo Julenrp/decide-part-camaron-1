@@ -30,8 +30,7 @@ class BaseExportTestCase(TestCase):
                 'has_voted': False,
             }
             for i in range(1, 5)
-        ]
-
+            ]
             self.census_create = []
             
             for data in self.census_data:
@@ -44,7 +43,7 @@ class BaseExportTestCase(TestCase):
 
             for i, censo in enumerate(self.census_create):
                 self.assertEqual(censo.name, f'Census_{i + 1}')
-        
+
     def tearDown(self):
         Census.objects.all().delete()
 
@@ -156,6 +155,7 @@ def listCensusFilter(self):
 class PeticionCensoTests(TestCase):
     def test_peticion_censo_envio_exitoso(self):
         datos_formulario = {
+            
             'nombre': 'Nombre Ejemplo',
             'email': 'ejemplo@email.com',
             'contenido': 'Contenido de ejemplo',
