@@ -26,6 +26,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('census/', include('census.urls')),
     path('doc/', schema_view),
+
     path('home/', HomeView.as_view(), name="AdminHome"),
     path('esp/', HomeViewEsp.as_view()),
     path('alm/', HomeViewAlm.as_view()),
