@@ -53,7 +53,6 @@ class CensusResultsView(ListView):
 
 class CensusCreate(generics.ListCreateAPIView):
     permission_classes = (UserIsStaff,)
-
     def create(self, request, *args, **kwargs):
         named = request.data.get('name')
         users = request.data.get('users')
@@ -87,7 +86,6 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
         return Response('Valid user')
 
 
-    
 class ExportCensusCsv(View):
     def get(self, request):
         census_data = Census.objects.all()
@@ -113,7 +111,7 @@ class ExportCensusCsv(View):
             writer.writerow([data.name, ', '.join(users_list)])
 
         return response
-
+    
 class ExportCensusJson(View):
     def get(self, request):
         census_data = Census.objects.all()
@@ -128,9 +126,7 @@ class ExportCensusJson(View):
         for c in census_data:
             # Convierte el objeto ManyRelatedManager a una lista de valores
             users_list = list(c.users.values_list('username', flat=True)) if c.users.exists() else []
-            
             data.append({'name': c.name, 'users': users_list})
-
         data_json = json.dumps(data, indent=2)  # indent=2 para una salida JSON más legible
         counter = self.request.session.get('download_counter', 1)
         filename = f"censusv{counter}.json"
@@ -142,7 +138,6 @@ class ExportCensusJson(View):
         return response
 
         
-
 def peticionCenso(request):
     formulario_Peticion = FormularioPeticion()
 
