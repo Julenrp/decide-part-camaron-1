@@ -27,6 +27,7 @@ class BaseExportTestCase(TestCase):
             {
                 'name': f'Census_{i}',
                 'users': [],
+                'has_voted': False,
             }
             for i in range(1, 5)
         ]
@@ -248,7 +249,8 @@ class ExportCensusJSONTest(BaseExportTestCase):
     def assertCheckCreatedCensusDataEqualsCensusData(self, exported_data, census_create):
         # Actualiza los nombres de los campos en base al nuevo modelo Census
         self.assertEqual(exported_data['name'], census_create.name)
-        expected_keys = ['name', 'users']
+        self.assertEqual(exported_data['has_voted'], census_create.has_voted)
+        expected_keys = ['name', 'users', 'has_voted']
         self.assertCountEqual(exported_data.keys(), expected_keys)
 
 class ExportCensusCSVTest(BaseExportTestCase):
@@ -259,7 +261,7 @@ class ExportCensusCSVTest(BaseExportTestCase):
         self.assertEqual(response.status_code, 200)
 
         lineas_respuesta_csv = response.content.decode('utf-8').splitlines()
-        encabezados = ['name', 'users']
+        encabezados = ['name', 'users', 'has_voted']
         self.assertEqual(lineas_respuesta_csv[0].split(','), encabezados)
 
     def testExportDataCsv(self):
@@ -283,4 +285,4 @@ class ExportCensusCSVTest(BaseExportTestCase):
 
         # Comparar los valores en las posiciones 0 y 1
         self.assertEqual(expected_data[0], actual_data[0].strip())  # Comparar name
-
+        self.assertEqual(expected_data[1], actual_data[1].strip()) # Comparar has_voted
