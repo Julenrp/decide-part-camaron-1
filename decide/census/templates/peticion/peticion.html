@@ -1,0 +1,18 @@
+{% extends "inicio/base.html" %}
+
+{% load static %}
+
+
+{% block content %}
+<h1 style="color:aliceblue; text-align: center;"> Petición de Censo</h1>
+<div class="contenedorFormulario">
+    {% if "valido" in request.GET %}
+            <p style="color: aliceblue;"> Gracias por enviar su reclamación</p>
+    {% endif %}
+    <form action="" method="POST" style="text-align: center;"> {% csrf_token %}
+    <table style="color:aliceblue; margin: 20px auto;">{{miFormulario.as_table}}</table>
+    <input type="submit" value="Enviar" style="width:150px">
+    </form>
+</div>
+    
+{% endblock%}
