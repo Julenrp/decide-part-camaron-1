@@ -50,15 +50,6 @@ class AuthTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         
 
-    # def test_logout(self):
-    #     data = {'username': 'voter1', 'password': '123'}
-    #     response = self.client.post(reverse('login'), data, format='json')
-    #     self.assertEqual(response.status_code, 200)
-
-    #     token = Token.objects.get(user__username='voter1')
-    #     response = self.client.post(reverse('logout'), {'token': token.key}, format='json')
-    #     self.assertEqual(response.status_code, 200)
-
         # Verifica que el token se haya eliminado después del cierre de sesión
         with self.assertRaises(Token.DoesNotExist):
             Token.objects.get(user__username='voter1')
