@@ -49,5 +49,11 @@ jobs:
         coverage xml 
     - name: Enviar Notificacion Discord
       run: |
-        curl -X POST -H "Content-Type: application/json" -d '{"content": "Se ha realizado un nuevo commit en la rama: ${{ github.event.ref }}" }' ${{ secrets.https://discord.com/api/webhooks/1184494185156448328/MUTNjlx301gRv3drFwRix4izYvCa91gxhEhmUF7xLTK8gOjSCP4m6fGYZRplOt1y15qN }}
+        message="Se ha realizado un nuevo commit en la rama: ${{ github.event.ref }}"
+        author="${{ github.event.head_commit.author.name }}"
+        commitMessage="${{ github.event.head_commit.message }}"
+        
+        content="{\"content\": \"Nuevo commit por ${author}: ${commitMessage}\" }"
+        
+        curl -X POST -H "Content-Type: application/json" -d "$content" ${{ secrets.DISCORD_WEBHOOK_URL }}
 
