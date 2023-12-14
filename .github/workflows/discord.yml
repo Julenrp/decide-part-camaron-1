@@ -3,9 +3,7 @@ name: Python application
 on:
   push:
     branches:
-      - develop
-      - master
-
+      - feature/42/discordNotificacion
 jobs:
   build:
     strategy:
@@ -47,13 +45,8 @@ jobs:
     - name: Run tests
       run: |
         cd decide
-        coverage run --branch --source=. ./manage.py test  --keepdb 
+        coverage run --branch --source=. ./manage.py test census --keepdb 
         coverage xml 
-    - name: Codacy Coverage Reporter
-      uses: codacy/codacy-coverage-reporter-action@v1
-      with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports: decide/coverage.xml
     - name: Enviar Notificacion Discord
       run: |
         curl -X POST -H "Content-Type: application/json" -d '{"content": "Se ha realizado un nuevo commit en la rama: ${{ github.event.ref }}" }' ${{ secrets.https://discord.com/api/webhooks/1184494185156448328/MUTNjlx301gRv3drFwRix4izYvCa91gxhEhmUF7xLTK8gOjSCP4m6fGYZRplOt1y15qN }}
