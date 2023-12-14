@@ -21,31 +21,36 @@ from datetime import datetime, timezone
 
 class BaseExportTestCase(TestCase):
     def setUp(self):
-        #Creamos 4 censos distintos
-        def setUp(self):
-            self.census_data = [
+        # Crear instancias de usuarios
+        self.user1 = User.objects.create(username='user1', password='password1')
+        self.user2 = User.objects.create(username='user2', password='password2')
+        self.user3 = User.objects.create(username='user3', password='password3')
+
+        self.census_data = [
             {
                 'name': f'Census_{i}',
-                'users': [],
+                'users': [self.user1, self.user2],
                 'has_voted': False,
             }
             for i in range(1, 5)
-            ]
-            self.census_create = []
-            
-            for data in self.census_data:
-                users_data = data.pop('users', []) 
-                census_instance = Census.objects.create(**data)
-                
-                census_instance.users.set(users_data)
-                
-                self.census_create.append(census_instance)
+        ]
 
-            for i, censo in enumerate(self.census_create):
-                self.assertEqual(censo.name, f'Census_{i + 1}')
+        self.census_create = []
+
+        for data in self.census_data:
+            users_data = data.pop('users', [])
+            census_instance = Census.objects.create(**data)
+
+            census_instance.users.set(users_data)
+
+            self.census_create.append(census_instance)
+
+        for i, censo in enumerate(self.census_create):
+            self.assertEqual(censo.name, f'Census_{i + 1}')
 
     def tearDown(self):
         Census.objects.all().delete()
+        User.objects.all().delete()
 
 class CensusTestCase(BaseTestCase):
 
@@ -279,10 +284,9 @@ class ExportCensusCSVTest(BaseExportTestCase):
 
     def assertCheckCreateCensusDataEqualCensusData(self, actual_data, census_create):
         expected_data = [
-           census_create['name'],
-           '', #String vacío representando un False
+            census_create['name'],
+            'False', 
         ]
-
-        # Comparar los valores en las posiciones 0 y 1
+        
         self.assertEqual(expected_data[0], actual_data[0].strip())  # Comparar name
-        self.assertEqual(expected_data[1], actual_data[1].strip()) # Comparar has_voted
+        self.assertEqual(expected_data[1], actual_data[2].strip())  # Comparar has_voted
