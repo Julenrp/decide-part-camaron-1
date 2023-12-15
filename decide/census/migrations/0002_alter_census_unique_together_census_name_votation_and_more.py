@@ -36,12 +36,5 @@ class Migration(migrations.Migration):
                 ('census', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='census.census')),
             ],
         ),
-        migrations.RemoveField(
-            model_name='census',
-            name='voter_id',
-        ),
-        migrations.RemoveField(
-            model_name='census',
-            name='voting_id',
-        ),
+        
     ]

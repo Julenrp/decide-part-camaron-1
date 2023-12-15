@@ -49,10 +49,6 @@ jobs:
         content="{\"content\": \"Nuevo commit por ${author}: ${commitMessage}\" }"
         
         curl -X POST -H "Content-Type: application/json" -d "$content" ${{ secrets.DISCORD_WEBHOOK_URL }}
-    - name: Run migrations (unnecessary)
-      run: |
-        cd decide
-        python manage.py migrate
     - name: Run tests
       run: |
         cd decide
