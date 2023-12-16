@@ -7,15 +7,15 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.urls import reverse
+from .forms import FormularioPeticion
 
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 
 from .models import Census
-from base import mods
 from base.tests import BaseTestCase
 from datetime import datetime, timezone
 
@@ -44,69 +44,13 @@ class CensusTestCase(BaseTestCase):
 
     def setUp(self):
         super().setUp()
-        self.census = Census(voting_id=1, voter_id=1)
+        self.census = Census()
         self.census.save()
 
     def tearDown(self):
         super().tearDown()
         self.census = None
-
-    def test_check_vote_permissions(self):
-        response = self.client.get('/census/{}/?voter_id={}'.format(1, 2), format='json')
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), 'Invalid voter')
-
-        response = self.client.get('/census/{}/?voter_id={}'.format(1, 1), format='json')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Valid voter')
-
-    def test_list_voting(self):
-        response = self.client.get('/census/?voting_id={}'.format(1), format='json')
-        self.assertEqual(response.status_code, 401)
-
-        self.login(user='noadmin')
-        response = self.client.get('/census/?voting_id={}'.format(1), format='json')
-        self.assertEqual(response.status_code, 403)
-
-        self.login()
-        response = self.client.get('/census/?voting_id={}'.format(1), format='json')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {'voters': [1]})
-
-    def test_add_new_voters_conflict(self):
-        data = {'voting_id': 1, 'voters': [1]}
-        response = self.client.post('/census/', data, format='json')
-        self.assertEqual(response.status_code, 401)
-
-        self.login(user='noadmin')
-        response = self.client.post('/census/', data, format='json')
-        self.assertEqual(response.status_code, 403)
-
-        self.login()
-        response = self.client.post('/census/', data, format='json')
-        self.assertEqual(response.status_code, 409)
-
-    def test_add_new_voters(self):
-        data = {'voting_id': 2, 'voters': [1,2,3,4]}
-        response = self.client.post('/census/', data, format='json')
-        self.assertEqual(response.status_code, 401)
-
-        self.login(user='noadmin')
-        response = self.client.post('/census/', data, format='json')
-        self.assertEqual(response.status_code, 403)
-
-        self.login()
-        response = self.client.post('/census/', data, format='json')
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(len(data.get('voters')), Census.objects.count() - 1)
-
-    def test_destroy_voter(self):
-        data = {'voters': [1]}
-        response = self.client.delete('/census/{}/'.format(1), data, format='json')
-        self.assertEqual(response.status_code, 204)
-        self.assertEqual(0, Census.objects.count())
-
-
+        
 class CensusTest(StaticLiveServerTestCase):
     def setUp(self):
         #Load base test functionality for decide
@@ -138,16 +82,15 @@ class CensusTest(StaticLiveServerTestCase):
         self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
 
         self.cleaner.get(self.live_server_url+"/admin/census/census/add")
-        now = datetime.now()
-        self.cleaner.find_element(By.ID, "id_voting_id").click()
-        self.cleaner.find_element(By.ID, "id_voting_id").send_keys(now.strftime("%m%d%M%S"))
-        self.cleaner.find_element(By.ID, "id_voter_id").click()
-        self.cleaner.find_element(By.ID, "id_voter_id").send_keys(now.strftime("%m%d%M%S"))
+        self.cleaner.find_element(By.ID, "id_name").click()
+        self.cleaner.find_element(By.ID, "id_name").send_keys("CensoTest")
+        self.cleaner.find_element(By.ID, "id_user_id").click()
+        self.cleaner.find_element(By.ID, "id_user_id").send_keys("Keys.ENTER")
         self.cleaner.find_element(By.NAME, "_save").click()
 
         self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/census/census")
 
-    def createCensusEmptyError(self):
+    def createCensusNoNameError(self):
         self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
         self.cleaner.set_window_size(1280, 720)
 
@@ -161,12 +104,14 @@ class CensusTest(StaticLiveServerTestCase):
 
         self.cleaner.get(self.live_server_url+"/admin/census/census/add")
 
+        self.cleaner.find_element(By.ID, "id_user_id").click()
+        self.cleaner.find_element(By.ID, "id_user_id").send_keys("Keys.ENTER")
         self.cleaner.find_element(By.NAME, "_save").click()
 
         self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[3]/div/div[1]/div/form/div/p').text == 'Please correct the errors below.')
         self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/census/census/add")
 
-    def createCensusValueError(self):
+    def createCensusNoUserError(self):
         self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
         self.cleaner.set_window_size(1280, 720)
 
@@ -179,15 +124,78 @@ class CensusTest(StaticLiveServerTestCase):
         self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
 
         self.cleaner.get(self.live_server_url+"/admin/census/census/add")
-        now = datetime.now()
-        self.cleaner.find_element(By.ID, "id_voting_id").click()
-        self.cleaner.find_element(By.ID, "id_voting_id").send_keys('64654654654654')
-        self.cleaner.find_element(By.ID, "id_voter_id").click()
-        self.cleaner.find_element(By.ID, "id_voter_id").send_keys('64654654654654')
+
+        self.cleaner.find_element(By.ID, "id_name").click()
+        self.cleaner.find_element(By.ID, "id_name").send_keys("CensoTest")
         self.cleaner.find_element(By.NAME, "_save").click()
 
         self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[3]/div/div[1]/div/form/div/p').text == 'Please correct the errors below.')
         self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/census/census/add")
+
+
+def listCensusFilter(self):
+        self.cleaner.get(self.live_server_url+"/census")
+        current = self.cleaner.current_url
+        idNum = current.replace(self.live_server_url+'/census/search/?census_id=', '')
+        self.assertTrue(current == self.live_server_url+"/census/search/?census_id="+ idNum)
+
+        self.cleaner.find_element(By.XPATH, '/html/body/article/table[2]/tbody/tr/td/a[1]').click()
+        current = self.cleaner.current_url
+        idNum = current.replace(self.live_server_url+'/booth/', '')
+        self.assertTrue(current == self.live_server_url+"/booth/"+ idNum)
+
+
+class PeticionCensoTests(TestCase):
+    def test_peticion_censo_envio_exitoso(self):
+        datos_formulario = {
+            'nombre': 'Nombre Ejemplo',
+            'email': 'ejemplo@email.com',
+            'contenido': 'Contenido de ejemplo',
+        }
+
+        response = self.client.post(reverse('peticion'), datos_formulario)
+        
+        self.assertEqual(response.status_code, 302)
+
+    def test_peticion_censo_envio_fallido_email(self):
+        datos_formulario = {
+            'nombre': 'Nombre Ejemplo',
+            'contenido': 'Contenido de ejemplo',
+        }
+
+        response = self.client.post(reverse('peticion'), datos_formulario)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'This field is required.')
+
+    def test_peticion_censo_envio_fallido_nombre(self):
+        datos_formulario = {
+            'email': 'ejemplo@email.com',
+            'contenido': 'Contenido de ejemplo',
+        }
+
+        response = self.client.post(reverse('peticion'), datos_formulario)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'This field is required.')
+    
+    def test_peticion_censo_envio_fallido_contenido(self):
+        datos_formulario = {
+            'nombre': 'Nombre Ejemplo',
+            'email': 'ejemplo@email.com',
+            
+        }
+
+        response = self.client.post(reverse('peticion'), datos_formulario)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'This field is required.')
+
+
+    def test_renderizacion_correcta_de_template(self):
+        response = self.client.get(reverse('peticion'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'peticion/peticion.html')
 
 class ExportCensusJSONTest(BaseExportTestCase):
     def testExportListJson(self):
@@ -288,5 +296,3 @@ class ExportCensusCSVTest(BaseExportTestCase):
         self.assertEqual(expected_data[0], actual_data[0].strip())  # Comparar voting_id
         self.assertEqual(expected_data[1], actual_data[1].strip())  # Comparar voter_id
 
-
-        

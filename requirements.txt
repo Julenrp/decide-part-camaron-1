@@ -10,7 +10,6 @@ jsonnet==0.18.0
 django-nose==1.4.6
 django-rest-swagger==2.2.0
 selenium==4.7.2
+
 django-crispy-forms == 2.0
 crispy-bootstrap4 == 2022.1
-
-

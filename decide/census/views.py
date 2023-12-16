@@ -1,8 +1,15 @@
 import json
+import csv
 from django.views.generic import TemplateView
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render, redirect
+from django.contrib import sessions
+from django.views.generic import TemplateView,ListView
 from django.views import View
+from django.core.mail import EmailMessage
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -12,18 +19,39 @@ from rest_framework.status import (
         HTTP_401_UNAUTHORIZED as ST_401,
         HTTP_409_CONFLICT as ST_409
 )
-from base.perms import UserIsStaff
-from .models import Census
-
-from django.http import HttpResponse
-import csv
-import json
-
-
-
-from django.shortcuts import render, redirect
 from .forms import FormularioPeticion
-from django.core.mail import EmailMessage
+from base.perms import UserIsStaff
+from django.contrib.auth.models import User
+from .models import Census
+from voting.models import Voting
+
+
+
+class FormularioPeticion(ListView):
+    model = Census
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        censo = Census.objects.all()
+        context['name'] = sorted(censo, key=lambda obj: obj.name.lower())
+        return context
+
+class CensusResultsView(ListView):
+    model = Census
+    template_name = 'census/results.html'
+
+    def get_context_data(self,*args,**kwargs):  # new
+        query = self.request.GET.get("census_id")
+        census = Census.objects.get(id=query)
+        object_list = census.users.all()
+        voting_list = Voting.objects.filter(census=query)
+        context = super(CensusResultsView, self).get_context_data(*args,**kwargs)
+        context['object_list'] = object_list
+        context['voting_list'] = voting_list
+        context['censo_id'] = query
+        print(context)
+        return context
+
 
 
 
@@ -62,6 +90,7 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
         except ObjectDoesNotExist:
             return Response('Invalid voter', status=ST_401)
         return Response('Valid voter')
+
 
     
 class ExportCensusCsv(View):
@@ -114,8 +143,6 @@ class ExportCensusJson(View):
 
         
 
-
-
 def peticionCenso(request):
     formulario_Peticion = FormularioPeticion()
 
@@ -125,8 +152,10 @@ def peticionCenso(request):
             nombre = request.POST.get("nombre")
             email = request.POST.get("email")
             contenido = request.POST.get("contenido")
+
             email2 = EmailMessage("Peticion de censo","El usuario con nombre {} y correo {} solicita:\n\n{}"
                                   .format(nombre, email, contenido),"",["nanomotors33@gmail.com"],reply_to=[email])
+
             try:
                 email2.send()
                 return redirect("http://127.0.0.1:8000/census/peticion/?valido")

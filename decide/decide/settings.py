@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'inicio',
     'corsheaders',
     'django_filters',
     'rest_framework',
@@ -184,6 +184,7 @@ if os.path.exists("config.jsonnet"):
 INSTALLED_APPS = INSTALLED_APPS + MODULES
 
 
+
 # crispy_form
 
 CRISPY_ALLOWED_TEMPLATE_PACK = 'bootstrap4'
@@ -196,4 +197,5 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS= True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "nanomotors33@gmail.com"
+
 EMAIL_HOST_PASSWORD = "qwsn idwj hrcv tysh "
