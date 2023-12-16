@@ -1,303 +1,64 @@
-import random
-import itertools
-from django.utils import timezone
-from django.conf import settings
+import csv
+import json
+import tempfile
+import os
 from django.contrib.auth.models import User
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import TestCase
+from django.urls import reverse
 from rest_framework.test import APIClient
-from rest_framework.test import APITestCase
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.urls import reverse
+from .forms import FormularioPeticion
 
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 
-from base import mods
+from .models import Census
 from base.tests import BaseTestCase
-from census.models import Census
-from mixnet.mixcrypt import ElGamal
-from mixnet.mixcrypt import MixCrypt
-from mixnet.models import Auth
-from voting.models import Voting, Question, QuestionOption
-from datetime import datetime
+from datetime import datetime, timezone
+
+class BaseExportTestCase(TestCase):
+    def setUp(self):
+        self.census_data = [
+            {
+                'name': f'Census_{i}',
+                'users': [],  
+                'has_voted': False,  
+            }
+            for i in range(1, 5)
+        ]
+
+        self.census_create = []
+
+        for data in self.census_data:
+            users_data = data.pop('users', []) 
+            census_instance = Census.objects.create(**data)
+            
+            census_instance.users.set(users_data)
+            
+            self.census_create.append(census_instance)
+
+        for i, censo in enumerate(self.census_create):
+            self.assertEqual(censo.name, f'Census_{i + 1}')
 
 
-class VotingTestCase(BaseTestCase):
+    def tearDown(self):
+        Census.objects.all().delete()
+
+class CensusTestCase(BaseTestCase):
 
     def setUp(self):
         super().setUp()
+        self.census = Census()
+        self.census.save()
 
     def tearDown(self):
         super().tearDown()
-
-    def encrypt_msg(self, msg, v, bits=settings.KEYBITS):
-        pk = v.pub_key
-        p, g, y = (pk.p, pk.g, pk.y)
-        k = MixCrypt(bits=bits)
-        k.k = ElGamal.construct((p, g, y))
-        return k.encrypt(msg)
-
-    def create_voting(self):
-        q = Question(desc='test question')
-        q.save()
-        for i in range(5):
-            opt = QuestionOption(question=q, option='option {}'.format(i+1))
-            opt.save()
-        v = Voting(name='test voting', question=q)
-        v.save()
-
-        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                          defaults={'me': True, 'name': 'test auth'})
-        a.save()
-        v.auths.add(a)
-
-        return v
-
-    def create_voters(self, v):
-        for i in range(100):
-            u, _ = User.objects.get_or_create(username='testvoter{}'.format(i))
-            u.is_active = True
-            u.save()
-            c = Census(voter_id=u.id, voting_id=v.id)
-            c.save()
-
-    def get_or_create_user(self, pk):
-        user, _ = User.objects.get_or_create(pk=pk)
-        user.username = 'user{}'.format(pk)
-        user.set_password('qwerty')
-        user.save()
-        return user
-
-    def store_votes(self, v):
-        voters = list(Census.objects.filter(voting_id=v.id))
-        voter = voters.pop()
-
-        clear = {}
-        for opt in v.question.options.all():
-            clear[opt.number] = 0
-            for i in range(random.randint(0, 5)):
-                a, b = self.encrypt_msg(opt.number, v)
-                data = {
-                    'voting': v.id,
-                    'voter': voter.voter_id,
-                    'vote': { 'a': a, 'b': b },
-                }
-                clear[opt.number] += 1
-                user = self.get_or_create_user(voter.voter_id)
-                self.login(user=user.username)
-                voter = voters.pop()
-                mods.post('store', json=data)
-        return clear
-
-    def test_complete_voting(self):
-        v = self.create_voting()
-        self.create_voters(v)
-
-        v.create_pubkey()
-        v.start_date = timezone.now()
-        v.save()
-
-        clear = self.store_votes(v)
-
-        self.login()  # set token
-        v.tally_votes(self.token)
-
-        tally = v.tally
-        tally.sort()
-        tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
-
-        for q in v.question.options.all():
-            self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
-
-        for q in v.postproc:
-            self.assertEqual(tally.get(q["number"], 0), q["votes"])
-
-    def test_create_voting_from_api(self):
-        data = {'name': 'Example'}
-        response = self.client.post('/voting/', data, format='json')
-        self.assertEqual(response.status_code, 401)
-
-        # login with user no admin
-        self.login(user='noadmin')
-        response = mods.post('voting', params=data, response=True)
-        self.assertEqual(response.status_code, 403)
-
-        # login with user admin
-        self.login()
-        response = mods.post('voting', params=data, response=True)
-        self.assertEqual(response.status_code, 400)
-
-        data = {
-            'name': 'Example',
-            'desc': 'Description example',
-            'question': 'I want a ',
-            'question_opt': ['cat', 'dog', 'horse']
-        }
-
-        response = self.client.post('/voting/', data, format='json')
-        self.assertEqual(response.status_code, 201)
-
-    def test_update_voting(self):
-        voting = self.create_voting()
-
-        data = {'action': 'start'}
-        #response = self.client.post('/voting/{}/'.format(voting.pk), data, format='json')
-        #self.assertEqual(response.status_code, 401)
-
-        # login with user no admin
-        self.login(user='noadmin')
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
-        self.assertEqual(response.status_code, 403)
-
-        # login with user admin
-        self.login()
-        data = {'action': 'bad'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
-        self.assertEqual(response.status_code, 400)
-
-        # STATUS VOTING: not started
-        for action in ['stop', 'tally']:
-            data = {'action': action}
-            response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
-            self.assertEqual(response.status_code, 400)
-            self.assertEqual(response.json(), 'Voting is not started')
-
-        data = {'action': 'start'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Voting started')
-
-        # STATUS VOTING: started
-        data = {'action': 'start'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), 'Voting already started')
-
-        data = {'action': 'tally'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), 'Voting is not stopped')
-
-        data = {'action': 'stop'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Voting stopped')
-
-        # STATUS VOTING: stopped
-        data = {'action': 'start'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), 'Voting already started')
-
-        data = {'action': 'stop'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), 'Voting already stopped')
-
-        data = {'action': 'tally'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Voting tallied')
-
-        # STATUS VOTING: tallied
-        data = {'action': 'start'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), 'Voting already started')
-
-        data = {'action': 'stop'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), 'Voting already stopped')
-
-        data = {'action': 'tally'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), 'Voting already tallied')
-
-class LogInSuccessTests(StaticLiveServerTestCase):
-
-    def setUp(self):
-        #Load base test functionality for decide
-        self.base = BaseTestCase()
-        self.base.setUp()
-
-        options = webdriver.ChromeOptions()
-        options.headless = True
-        self.driver = webdriver.Chrome(options=options)
-
-        super().setUp()
-
-    def tearDown(self):
-        super().tearDown()
-        self.driver.quit()
-
-        self.base.tearDown()
-
-    def successLogIn(self):
-        self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
-        self.cleaner.set_window_size(1280, 720)
-
-        self.cleaner.find_element(By.ID, "id_username").click()
-        self.cleaner.find_element(By.ID, "id_username").send_keys("decide")
-
-        self.cleaner.find_element(By.ID, "id_password").click()
-        self.cleaner.find_element(By.ID, "id_password").send_keys("decide")
-
-        self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
-        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/")
-
-class LogInErrorTests(StaticLiveServerTestCase):
-
-    def setUp(self):
-        #Load base test functionality for decide
-        self.base = BaseTestCase()
-        self.base.setUp()
-
-        options = webdriver.ChromeOptions()
-        options.headless = True
-        self.driver = webdriver.Chrome(options=options)
-
-        super().setUp()
-
-    def tearDown(self):
-        super().tearDown()
-        self.driver.quit()
-
-        self.base.tearDown()
-
-    def usernameWrongLogIn(self):
-        self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
-        self.cleaner.set_window_size(1280, 720)
+        self.census = None
         
-        self.cleaner.find_element(By.ID, "id_username").click()
-        self.cleaner.find_element(By.ID, "id_username").send_keys("usuarioNoExistente")
-
-        self.cleaner.find_element(By.ID, "id_password").click()
-        self.cleaner.find_element(By.ID, "id_password").send_keys("usuarioNoExistente")
-
-        self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
-
-        self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[2]/div/div[1]/p').text == 'Please enter the correct username and password for a staff account. Note that both fields may be case-sensitive.')
-
-    def passwordWrongLogIn(self):
-        self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
-        self.cleaner.set_window_size(1280, 720)
-
-        self.cleaner.find_element(By.ID, "id_username").click()
-        self.cleaner.find_element(By.ID, "id_username").send_keys("decide")
-
-        self.cleaner.find_element(By.ID, "id_password").click()
-        self.cleaner.find_element(By.ID, "id_password").send_keys("wrongPassword")
-
-        self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
-
-        self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[2]/div/div[1]/p').text == 'Please enter the correct username and password for a staff account. Note that both fields may be case-sensitive.')
-
-class QuestionsTests(StaticLiveServerTestCase):
-
+class CensusTest(StaticLiveServerTestCase):
     def setUp(self):
         #Load base test functionality for decide
         self.base = BaseTestCase()
@@ -314,8 +75,8 @@ class QuestionsTests(StaticLiveServerTestCase):
         self.driver.quit()
 
         self.base.tearDown()
-
-    def createQuestionSuccess(self):
+    
+    def createCensusSuccess(self):
         self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
         self.cleaner.set_window_size(1280, 720)
 
@@ -327,23 +88,16 @@ class QuestionsTests(StaticLiveServerTestCase):
 
         self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
 
-        self.cleaner.get(self.live_server_url+"/admin/voting/question/add/")
-        
-        self.cleaner.find_element(By.ID, "id_desc").click()
-        self.cleaner.find_element(By.ID, "id_desc").send_keys('Test')
-        self.cleaner.find_element(By.ID, "id_options-0-number").click()
-        self.cleaner.find_element(By.ID, "id_options-0-number").send_keys('1')
-        self.cleaner.find_element(By.ID, "id_options-0-option").click()
-        self.cleaner.find_element(By.ID, "id_options-0-option").send_keys('test1')
-        self.cleaner.find_element(By.ID, "id_options-1-number").click()
-        self.cleaner.find_element(By.ID, "id_options-1-number").send_keys('2')
-        self.cleaner.find_element(By.ID, "id_options-1-option").click()
-        self.cleaner.find_element(By.ID, "id_options-1-option").send_keys('test2')
+        self.cleaner.get(self.live_server_url+"/admin/census/census/add")
+        self.cleaner.find_element(By.ID, "id_name").click()
+        self.cleaner.find_element(By.ID, "id_name").send_keys("CensoTest")
+        self.cleaner.find_element(By.ID, "id_user_id").click()
+        self.cleaner.find_element(By.ID, "id_user_id").send_keys("Keys.ENTER")
         self.cleaner.find_element(By.NAME, "_save").click()
 
-        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/voting/question/")
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/census/census")
 
-    def createCensusEmptyError(self):
+    def createCensusNoNameError(self):
         self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
         self.cleaner.set_window_size(1280, 720)
 
@@ -355,9 +109,180 @@ class QuestionsTests(StaticLiveServerTestCase):
 
         self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
 
-        self.cleaner.get(self.live_server_url+"/admin/voting/question/add/")
+        self.cleaner.get(self.live_server_url+"/admin/census/census/add")
 
+        self.cleaner.find_element(By.ID, "id_user_id").click()
+        self.cleaner.find_element(By.ID, "id_user_id").send_keys("Keys.ENTER")
         self.cleaner.find_element(By.NAME, "_save").click()
 
         self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[3]/div/div[1]/div/form/div/p').text == 'Please correct the errors below.')
-        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/voting/question/add/")
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/census/census/add")
+
+    def createCensusNoUserError(self):
+        self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
+        self.cleaner.set_window_size(1280, 720)
+
+        self.cleaner.find_element(By.ID, "id_username").click()
+        self.cleaner.find_element(By.ID, "id_username").send_keys("decide")
+
+        self.cleaner.find_element(By.ID, "id_password").click()
+        self.cleaner.find_element(By.ID, "id_password").send_keys("decide")
+
+        self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
+
+        self.cleaner.get(self.live_server_url+"/admin/census/census/add")
+
+        self.cleaner.find_element(By.ID, "id_name").click()
+        self.cleaner.find_element(By.ID, "id_name").send_keys("CensoTest")
+        self.cleaner.find_element(By.NAME, "_save").click()
+
+        self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[3]/div/div[1]/div/form/div/p').text == 'Please correct the errors below.')
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/census/census/add")
+
+
+def listCensusFilter(self):
+        self.cleaner.get(self.live_server_url+"/census")
+        current = self.cleaner.current_url
+        idNum = current.replace(self.live_server_url+'/census/search/?census_id=', '')
+        self.assertTrue(current == self.live_server_url+"/census/search/?census_id="+ idNum)
+
+        self.cleaner.find_element(By.XPATH, '/html/body/article/table[2]/tbody/tr/td/a[1]').click()
+        current = self.cleaner.current_url
+        idNum = current.replace(self.live_server_url+'/booth/', '')
+        self.assertTrue(current == self.live_server_url+"/booth/"+ idNum)
+
+
+class PeticionCensoTests(TestCase):
+    def test_peticion_censo_envio_exitoso(self):
+        datos_formulario = {
+            
+            'nombre': 'Nombre Ejemplo',
+            'email': 'ejemplo@email.com',
+            'contenido': 'Contenido de ejemplo',
+        }
+
+        response = self.client.post(reverse('peticion'), datos_formulario)
+        
+        self.assertEqual(response.status_code, 200)
+
+    def test_peticion_censo_envio_fallido_email(self):
+        datos_formulario = {
+            'nombre': 'Nombre Ejemplo',
+            'contenido': 'Contenido de ejemplo',
+        }
+
+        response = self.client.post(reverse('peticion'), datos_formulario)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'This field is required.')
+
+    def test_peticion_censo_envio_fallido_nombre(self):
+        datos_formulario = {
+            'email': 'ejemplo@email.com',
+            'contenido': 'Contenido de ejemplo',
+        }
+
+        response = self.client.post(reverse('peticion'), datos_formulario)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'This field is required.')
+    
+    def test_peticion_censo_envio_fallido_contenido(self):
+        datos_formulario = {
+            'nombre': 'Nombre Ejemplo',
+            'email': 'ejemplo@email.com',
+            
+        }
+
+        response = self.client.post(reverse('peticion'), datos_formulario)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'This field is required.')
+
+
+    def test_renderizacion_correcta_de_template(self):
+        response = self.client.get(reverse('peticion'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'peticion/peticion.html')
+
+class ExportCensusJSONTest(BaseExportTestCase):
+    def testExportListJson(self):
+        url_exportacion = reverse('export_census_json')
+        response = self.client.get(url_exportacion)
+        self.assertEqual(response.status_code, 200)
+
+        datos_exportados = json.loads(response.content.decode('utf-8'))
+
+        self.assertIsInstance(datos_exportados, list)
+        self.assertEqual(len(datos_exportados), len(self.census_create))
+
+        # Iteramos a través de cada elemento exportado y comparamos con la instancia de censo correspondiente
+        for indice, datos_censo_exportado in enumerate(datos_exportados):
+            if indice < len(self.census_create):
+                self.assertCheckCreatedCensusDataEqualsCensusData(datos_censo_exportado, self.census_create[indice])
+
+    def testExportedJsonFile(self):
+        url_exportacion = reverse('export_census_json')
+        response = self.client.get(url_exportacion)
+        self.assertEqual(response.status_code, 200)
+
+        datos_respuesta = json.loads(response.content.decode('utf-8'))
+
+        # Creamos un archivo temporal con extensión .json para almacenar los datos exportados
+        with tempfile.NamedTemporaryFile(suffix='.json', delete=False, mode='w+b') as archivo_temporal:
+            archivo_temporal.write(json.dumps(datos_respuesta, indent=2, default=str).encode('utf-8'))
+            ruta_archivo_temporal = archivo_temporal.name
+
+        self.assertTrue(os.path.exists(ruta_archivo_temporal))
+
+        # Leemos los datos guardados desde el archivo JSON temporal
+        with open(ruta_archivo_temporal, 'r', encoding='utf-8') as archivo_json_temporal:
+            datos_guardados = json.load(archivo_json_temporal)
+
+        # Comparamos cada conjunto de datos guardados con las instancias del censo creado
+        for indice, datos_censo_guardado in enumerate(datos_guardados):
+            if indice < len(self.census_create):
+                self.assertCheckCreatedCensusDataEqualsCensusData(datos_censo_guardado, self.census_create[indice])
+
+        os.remove(ruta_archivo_temporal)
+
+    def assertCheckCreatedCensusDataEqualsCensusData(self, exported_data, census_create):
+        # Actualiza los nombres de los campos en base al nuevo modelo Census
+        self.assertEqual(exported_data['name'], census_create.name)
+        self.assertEqual(exported_data['has_voted'], census_create.has_voted)
+        expected_keys = ['name', 'users', 'has_voted']
+        self.assertCountEqual(exported_data.keys(), expected_keys)
+
+class ExportCensusCSVTest(BaseExportTestCase):
+
+    def testExportCsv(self):
+        url_exportacion_csv = reverse('export_census_csv')
+        response = self.client.get(url_exportacion_csv)
+        self.assertEqual(response.status_code, 200)
+
+        lineas_respuesta_csv = response.content.decode('utf-8').splitlines()
+        encabezados = ['name', 'users', 'has_voted']
+        self.assertEqual(lineas_respuesta_csv[0].split(','), encabezados)
+
+    def testExportDataCsv(self):
+        url_exportacion_csv = reverse('export_census_csv')
+        response = self.client.get(url_exportacion_csv)
+        self.assertEqual(response.status_code, 200)
+
+        # Utilizamos csv.reader para manejar automáticamente las diferencias de formato en las nuevas líneas
+        lineas_respuesta_csv = list(csv.reader(response.content.decode('utf-8').splitlines()))
+
+        # Comparamos cada conjunto de datos exportados con las instancias del censo
+        for indice, datos_censo in enumerate(self.census_data):
+            if indice + 1 < len(lineas_respuesta_csv):
+                self.assertCheckCreateCensusDataEqualCensusData(lineas_respuesta_csv[indice + 1], datos_censo)
+
+    def assertCheckCreateCensusDataEqualCensusData(self, actual_data, census_create):
+        expected_data = [
+           census_create['name'],
+           '', #String vacío representando un False
+        ]
+
+        # Comparar los valores en las posiciones 0 y 1
+        self.assertEqual(expected_data[0], actual_data[0].strip())  # Comparar name
+        self.assertEqual(expected_data[1], actual_data[1].strip())  # Comparar has_voted
