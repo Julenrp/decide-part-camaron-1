@@ -3,7 +3,7 @@ name: Python application
 on:
   push:
     branches:
-      - develop
+      - develop2
       - master
 
 jobs:
