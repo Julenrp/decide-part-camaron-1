@@ -54,9 +54,9 @@ class StoreTextCase(BaseTestCase):
             self.gen_voting(v)
             random_user = random.choice(users)
             user = self.get_or_create_user(random_user)
-            self.login(user=user.username)
-            census = Census(voting_id=v, voter_id=random_user)
-            census.save()
+            census = Census(name='Census Name') 
+            census.save()  
+            census.users.add(random_user)
             data = {
                 "voting": v,
                 "voter": random_user,
@@ -81,7 +81,7 @@ class StoreTextCase(BaseTestCase):
         VOTING_PK = 345
         CTE_A = 96
         CTE_B = 184
-        census = Census(voting_id=VOTING_PK, voter_id=1)
+        census = Census(name='Census Name')
         census.save()
         self.gen_voting(VOTING_PK)
         data = {

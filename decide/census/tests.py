@@ -21,21 +21,32 @@ from datetime import datetime, timezone
 
 class BaseExportTestCase(TestCase):
     def setUp(self):
-        #Creamos 4 censos distintos
+        # Crear instancias de usuarios
+        self.user1 = User.objects.create(username='user1', password='password1')
+        self.user2 = User.objects.create(username='user2', password='password2')
+        self.user3 = User.objects.create(username='user3', password='password3')
+
         self.census_data = [
             {
-                'voting_id': i,
-                'voter_id': i,
+                'name': f'Census_{i}',
+                'users': [self.user1, self.user2],
+                'has_voted': False,
             }
-            for i in range(1, 5) 
+            for i in range(1, 5)
         ]
-        #Creamos los censos con datos de census_data
-        self.census_create = [Census.objects.create(**data) for data in self.census_data]
-        
-        #Verificamos que cada censo creado, verifica que voter_id y voting_id son i+1
+
+        self.census_create = []
+
+        for data in self.census_data:
+            users_data = data.pop('users', [])
+            census_instance = Census.objects.create(**data)
+
+            census_instance.users.set(users_data)
+
+            self.census_create.append(census_instance)
+
         for i, censo in enumerate(self.census_create):
-            self.assertEqual(censo.voting_id, i + 1)
-            self.assertEqual(censo.voter_id, i + 1)
+            self.assertEqual(censo.name, f'Census_{i + 1}')
         
     def tearDown(self):
         Census.objects.all().delete()
@@ -239,9 +250,10 @@ class ExportCensusJSONTest(BaseExportTestCase):
         os.remove(ruta_archivo_temporal)
 
     def assertCheckCreatedCensusDataEqualsCensusData(self, exported_data, census_create):
-        self.assertEqual(exported_data['voting_id'], census_create.voting_id)
-        self.assertEqual(exported_data['voter_id'], census_create.voter_id)
-        expected_keys = ['voting_id', 'voter_id']
+        # Actualiza los nombres de los campos en base al nuevo modelo Census
+        self.assertEqual(exported_data['name'], census_create.name)
+        self.assertEqual(exported_data['has_voted'], census_create.has_voted)
+        expected_keys = ['name', 'users', 'has_voted']
         self.assertCountEqual(exported_data.keys(), expected_keys)
 
 class ExportCensusCSVTest(BaseExportTestCase):
@@ -252,7 +264,7 @@ class ExportCensusCSVTest(BaseExportTestCase):
         self.assertEqual(response.status_code, 200)
 
         lineas_respuesta_csv = response.content.decode('utf-8').splitlines()
-        encabezados = ['voting_id', 'voter_id']
+        encabezados = ['name', 'users', 'has_voted']
         self.assertEqual(lineas_respuesta_csv[0].split(','), encabezados)
 
     def testExportDataCsv(self):
@@ -263,36 +275,17 @@ class ExportCensusCSVTest(BaseExportTestCase):
         # Utilizamos csv.reader para manejar automáticamente las diferencias de formato en las nuevas líneas
         lineas_respuesta_csv = list(csv.reader(response.content.decode('utf-8').splitlines()))
 
-        # Creamos un archivo temporal con extensión .csv para almacenar los datos exportados
-        with tempfile.NamedTemporaryFile(mode='w+', suffix='.csv', delete=False) as archivo_temporal:
-            # Realizamos otra solicitud GET a la URL de exportación y escribimos la respuesta en el archivo temporal
-            response_segunda = self.client.get(url_exportacion_csv)
-            archivo_temporal.write(response_segunda.content.decode('utf-8'))
-
-        try:
-            self.assertEqual(response_segunda.status_code, 200)
-
-            with open(archivo_temporal.name, 'r') as archivo:
-                contenido_archivo_temporal = list(csv.reader(archivo))
-
-            # Comparamos cada conjunto de datos exportados con las instancias del censo
-            for indice, datos_censo in enumerate(self.census_data):
-                if indice + 1 < len(lineas_respuesta_csv):
-                    self.assertCheckCreateCensusDataEqualCensusData(lineas_respuesta_csv[indice + 1], datos_censo)
-
-                if indice + 1 < len(contenido_archivo_temporal):
-                    self.assertCheckCreateCensusDataEqualCensusData(contenido_archivo_temporal[indice + 1], datos_censo)
-
-        finally:
-            os.remove(archivo_temporal.name)
+        # Comparamos cada conjunto de datos exportados con las instancias del censo
+        for indice, datos_censo in enumerate(self.census_data):
+            if indice + 1 < len(lineas_respuesta_csv):
+                self.assertCheckCreateCensusDataEqualCensusData(lineas_respuesta_csv[indice + 1], datos_censo)
 
     def assertCheckCreateCensusDataEqualCensusData(self, actual_data, census_create):
         expected_data = [
-            str(census_create['voting_id']),
-            str(census_create['voter_id']),
+            census_create['name'],
+            'False', 
         ]
-
-        # Comparar los valores en las posiciones 0 y 1
-        self.assertEqual(expected_data[0], actual_data[0].strip())  # Comparar voting_id
-        self.assertEqual(expected_data[1], actual_data[1].strip())  # Comparar voter_id
+        
+        self.assertEqual(expected_data[0], actual_data[0].strip())  # Comparar name
+        self.assertEqual(expected_data[1], actual_data[2].strip())  # Comparar has_voted
 

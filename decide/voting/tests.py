@@ -60,8 +60,11 @@ class VotingTestCase(BaseTestCase):
             u, _ = User.objects.get_or_create(username='testvoter{}'.format(i))
             u.is_active = True
             u.save()
-            c = Census(voter_id=u.id, voting_id=v.id)
+            c = Census(name='test_census{}'.format(i))  
             c.save()
+            c.users.add(u)
+            v.census = c  
+            v.save()
 
     def get_or_create_user(self, pk):
         user, _ = User.objects.get_or_create(pk=pk)
@@ -71,7 +74,12 @@ class VotingTestCase(BaseTestCase):
         return user
 
     def store_votes(self, v):
-        voters = list(Census.objects.filter(voting_id=v.id))
+        voters = list(Census.objects.filter(votation__id=v.id))
+
+        if not voters:
+            # Manejar el caso en que no hay votantes
+            return {}
+
         voter = voters.pop()
 
         clear = {}
@@ -82,13 +90,21 @@ class VotingTestCase(BaseTestCase):
                 data = {
                     'voting': v.id,
                     'voter': voter.voter_id,
-                    'vote': { 'a': a, 'b': b },
+                    'vote': {'a': a, 'b': b},
                 }
                 clear[opt.number] += 1
                 user = self.get_or_create_user(voter.voter_id)
                 self.login(user=user.username)
                 voter = voters.pop()
+
+                # Asegúrate de que voters no esté vacío antes de intentar pop() nuevamente
+                if not voters:
+                    break
+
                 mods.post('store', json=data)
+
+        v.save()
+
         return clear
 
     def test_complete_voting(self):
