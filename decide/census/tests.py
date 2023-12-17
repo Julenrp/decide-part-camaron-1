@@ -21,24 +21,36 @@ from datetime import datetime, timezone
 
 class BaseExportTestCase(TestCase):
     def setUp(self):
-        #Creamos 4 censos distintos
+
+        self.user1 = User.objects.create(username='user1', password='password1')
+        self.user2 = User.objects.create(username='user2', password='password2')
+        self.user3 = User.objects.create(username='user3', password='password3')
+
         self.census_data = [
             {
-                'voting_id': i,
-                'voter_id': i,
+                'name': f'Census_{i}',
+                'users': [self.user1, self.user2],
+                'has_voted': False,
             }
-            for i in range(1, 5) 
+            for i in range(1, 5)
         ]
-        #Creamos los censos con datos de census_data
-        self.census_create = [Census.objects.create(**data) for data in self.census_data]
         
-        #Verificamos que cada censo creado, verifica que voter_id y voting_id son i+1
+        self.census_create = []
+
+        for data in self.census_data:
+            users_data = data.pop('users', [])
+            census_instance = Census.objects.create(**data)
+
+            census_instance.users.set(users_data)
+
+            self.census_create.append(census_instance)
+
         for i, censo in enumerate(self.census_create):
-            self.assertEqual(censo.voting_id, i + 1)
-            self.assertEqual(censo.voter_id, i + 1)
-        
+            self.assertEqual(censo.name, f'Census_{i + 1}')
+
     def tearDown(self):
         Census.objects.all().delete()
+        User.objects.all().delete()
 
 class CensusTestCase(BaseTestCase):
 
@@ -239,9 +251,10 @@ class ExportCensusJSONTest(BaseExportTestCase):
         os.remove(ruta_archivo_temporal)
 
     def assertCheckCreatedCensusDataEqualsCensusData(self, exported_data, census_create):
-        self.assertEqual(exported_data['voting_id'], census_create.voting_id)
-        self.assertEqual(exported_data['voter_id'], census_create.voter_id)
-        expected_keys = ['voting_id', 'voter_id']
+        self.assertEqual(exported_data['name'], census_create.name)
+        self.assertEqual(exported_data['users'], census_create.users)
+        self.assertEqual(exported_data['votings'], census_create.votings)
+        expected_keys = ['name', 'users', 'votings']
         self.assertCountEqual(exported_data.keys(), expected_keys)
 
 class ExportCensusCSVTest(BaseExportTestCase):
@@ -252,7 +265,7 @@ class ExportCensusCSVTest(BaseExportTestCase):
         self.assertEqual(response.status_code, 200)
 
         lineas_respuesta_csv = response.content.decode('utf-8').splitlines()
-        encabezados = ['voting_id', 'voter_id']
+        encabezados = ['name', 'users', 'votings']
         self.assertEqual(lineas_respuesta_csv[0].split(','), encabezados)
 
     def testExportDataCsv(self):
@@ -277,6 +290,8 @@ class ExportCensusCSVTest(BaseExportTestCase):
 
             # Comparamos cada conjunto de datos exportados con las instancias del censo
             for indice, datos_censo in enumerate(self.census_data):
+                print("##################################" + str(datos_censo) + "##################################" + str(indice))
+                print(lineas_respuesta_csv)
                 if indice + 1 < len(lineas_respuesta_csv):
                     self.assertCheckCreateCensusDataEqualCensusData(lineas_respuesta_csv[indice + 1], datos_censo)
 
@@ -288,11 +303,13 @@ class ExportCensusCSVTest(BaseExportTestCase):
 
     def assertCheckCreateCensusDataEqualCensusData(self, actual_data, census_create):
         expected_data = [
-            str(census_create['voting_id']),
-            str(census_create['voter_id']),
+            str(census_create['name']),
+            str(census_create['users']),
+            str(census_create['votings']),
         ]
 
         # Comparar los valores en las posiciones 0 y 1
-        self.assertEqual(expected_data[0], actual_data[0].strip())  # Comparar voting_id
-        self.assertEqual(expected_data[1], actual_data[1].strip())  # Comparar voter_id
+        self.assertEqual(expected_data[0], actual_data[0].strip())  # Comparar name
+        self.assertEqual(expected_data[1], actual_data[1].strip())  # Comparar users
+        self.assertEqual(expected_data[2], actual_data[2].strip())  # Comparar votings
 
