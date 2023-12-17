@@ -48,7 +48,6 @@ class CensusResultsView(ListView):
         context['object_list'] = object_list
         context['voting_list'] = voting_list
         context['censo_id'] = query
-        print(context)
         return context
 
 class CensusCreate(generics.ListCreateAPIView):
@@ -117,7 +116,6 @@ class ExportCensusCsv(View):
             usernames = []
             for user in userQuery:
                 usernames.append(user.username)
-            print(usernames)
             writer.writerow([data.name, usernames, votings, data.has_voted])
 
         return response

@@ -46,8 +46,6 @@ class BaseExportTestCase(TestCase):
             census_instance.users.set(users_data)
 
             self.census_create.append(census_instance)
-            print("@@@@@@@@@@@@@@@@@@@@@@")
-            print(census_instance.has_voted)
 
 
         for i, censo in enumerate(self.census_create):
