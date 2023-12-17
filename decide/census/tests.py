@@ -16,6 +16,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 
 from .models import Census
+from voting.models import Voting
 from base.tests import BaseTestCase
 from datetime import datetime, timezone
 
@@ -36,14 +37,18 @@ class BaseExportTestCase(TestCase):
         ]
         
         self.census_create = []
-
+        
+        
         for data in self.census_data:
             users_data = data.pop('users', [])
-            census_instance = Census.objects.create(**data)
 
+            census_instance = Census.objects.create(**data)
             census_instance.users.set(users_data)
 
             self.census_create.append(census_instance)
+            print("@@@@@@@@@@@@@@@@@@@@@@")
+            print(census_instance.has_voted)
+
 
         for i, censo in enumerate(self.census_create):
             self.assertEqual(censo.name, f'Census_{i + 1}')
@@ -252,9 +257,10 @@ class ExportCensusJSONTest(BaseExportTestCase):
 
     def assertCheckCreatedCensusDataEqualsCensusData(self, exported_data, census_create):
         self.assertEqual(exported_data['name'], census_create.name)
-        self.assertEqual(exported_data['users'], census_create.users)
-        self.assertEqual(exported_data['votings'], census_create.votings)
-        expected_keys = ['name', 'users', 'votings']
+        self.assertEqual(exported_data['users'], ['user1', 'user2'])
+        self.assertEqual(exported_data['votings'], [])
+        self.assertEqual(exported_data['has_voted'], census_create.has_voted)
+        expected_keys = ['name', 'users', 'votings', 'has_voted']
         self.assertCountEqual(exported_data.keys(), expected_keys)
 
 class ExportCensusCSVTest(BaseExportTestCase):
@@ -265,7 +271,7 @@ class ExportCensusCSVTest(BaseExportTestCase):
         self.assertEqual(response.status_code, 200)
 
         lineas_respuesta_csv = response.content.decode('utf-8').splitlines()
-        encabezados = ['name', 'users', 'votings']
+        encabezados = ['name', 'users', 'votings', 'has_voted']
         self.assertEqual(lineas_respuesta_csv[0].split(','), encabezados)
 
     def testExportDataCsv(self):
@@ -290,8 +296,6 @@ class ExportCensusCSVTest(BaseExportTestCase):
 
             # Comparamos cada conjunto de datos exportados con las instancias del censo
             for indice, datos_censo in enumerate(self.census_data):
-                print("##################################" + str(datos_censo) + "##################################" + str(indice))
-                print(lineas_respuesta_csv)
                 if indice + 1 < len(lineas_respuesta_csv):
                     self.assertCheckCreateCensusDataEqualCensusData(lineas_respuesta_csv[indice + 1], datos_censo)
 
@@ -304,12 +308,11 @@ class ExportCensusCSVTest(BaseExportTestCase):
     def assertCheckCreateCensusDataEqualCensusData(self, actual_data, census_create):
         expected_data = [
             str(census_create['name']),
-            str(census_create['users']),
-            str(census_create['votings']),
+            str(census_create['has_voted']),
         ]
 
         # Comparar los valores en las posiciones 0 y 1
         self.assertEqual(expected_data[0], actual_data[0].strip())  # Comparar name
-        self.assertEqual(expected_data[1], actual_data[1].strip())  # Comparar users
-        self.assertEqual(expected_data[2], actual_data[2].strip())  # Comparar votings
+        self.assertEqual(expected_data[1], actual_data[3].strip())  # Comparar has_voted
+
 

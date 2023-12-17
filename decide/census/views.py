@@ -105,7 +105,7 @@ class ExportCensusCsv(View):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         writer = csv.writer(response)
-        writer.writerow(['name', 'users', 'votings'])
+        writer.writerow(['name', 'users', 'votings', 'has_voted'])
 
         for data in census_data:
             votQuery = Voting.objects.filter(census=data.id)
@@ -118,7 +118,7 @@ class ExportCensusCsv(View):
             for user in userQuery:
                 usernames.append(user.username)
             print(usernames)
-            writer.writerow([data.name, usernames, votings])
+            writer.writerow([data.name, usernames, votings, data.has_voted])
 
         return response
 
@@ -144,7 +144,7 @@ class ExportCensusJson(View):
             for user in userQuery:
                 usernames.append(user.username)
 
-            data.append({'name': c.name, 'users': usernames, 'votings': votings})
+            data.append({'name': c.name, 'users': usernames, 'votings': votings, 'has_voted': c.has_voted})
 
         data_json = json.dumps(data)
         counter = self.request.session.get('download_counter', 1)
@@ -170,17 +170,16 @@ class ExportCensusDetailCsv(View):
         writer = csv.writer(response)
         writer.writerow(['ID', 'Name', 'Usernames','Has Voted']) 
 
-        usernames = ""
+        usernames = []
 
         for user in census.users.all():
-            usernames += "{" + str(user.id) + ":" + user.username + "}"
-
+            usernames.append(user.username)
 
         voting_list = Voting.objects.filter(census=census_id)
-        votings = ""
+        votings = []
 
         for voting in voting_list:
-            votings += "{" + str(voting.id) + ":" + voting.name + "}"
+            votings.append(voting.name)
 
         writer.writerow([census.id, census.name, usernames, census.has_voted, votings])
 
@@ -190,13 +189,13 @@ class ExportCensusDetailCsv(View):
 class ExportCensusDetailJson(View):
     def get (self, request, census_id):
         try:
-            census = Census.objects.get(pk=census_id)
+            census = Census.objects.get(id=census_id)
         except Census.DoesNotExist:
             return HttpResponse("Census ID does not exist", status=404)
         
-        usernames = list(census.users.values('id', 'username'))
+        usernames = list(census.users.values('username'))
         voting_list = Voting.objects.filter(census=census_id)
-        votings = list(voting_list.values('id', 'name'))
+        votings = list(voting_list.values('name'))
 
         census_data = {
             'id': census.id,
