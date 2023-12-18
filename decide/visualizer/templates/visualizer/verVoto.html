@@ -1,0 +1,25 @@
+{% extends "inicio/base.html" %}
+
+{% load static %}
+
+
+{% block content %}
+
+{% for votacion in votaciones %}
+
+<section class="page-section clearfix">
+   <div class="container" style="margin: auto;">
+     <div class="intro">
+         <h2 class="section-heading mb-4" >
+           <span class="section-heading-lower"><a href="{% url 'Visualizar' votacion.id %}">{{votacion.name}}</a></span>
+           <span class="section-heading-upper" style="color: aliceblue;">Descripción: {{votacion.desc}}</span>
+           <span class="section-heading-upper"style="color: aliceblue;">Pregunta: {{votacion.question}}</span>
+           <span class="section-heading-upper"style="color: aliceblue;">Descripción Pregunta: {{votacion.question.desc}}</span>
+         </h2>
+        
+     </div>
+   </div>
+ </section>
+
+{%endfor%}
+{% endblock%}
