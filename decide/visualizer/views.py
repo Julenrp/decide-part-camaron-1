@@ -2,6 +2,8 @@ import json
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.http import Http404
+from voting.models import Voting
+from django.shortcuts import render
 
 from base import mods
 
@@ -20,3 +22,9 @@ class VisualizerView(TemplateView):
             raise Http404
 
         return context
+
+
+def listarVotacion(request):
+    votacion = Voting.objects.all()
+
+    return render(request, "visualizer/verVoto.html", {"votaciones":votacion})
