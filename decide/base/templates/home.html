@@ -77,6 +77,9 @@
                 <a class="nav-link" href="/admin/census">Census</a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" href="/census">Census search</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" href="/admin/voting/voting">Voting</a>
             </li>
             <li class="nav-item">
@@ -238,7 +241,7 @@
       document.getElementById('languageSelect').addEventListener('change', function () {
           var selectedLanguage = this.value;
           if (selectedLanguage === 'en') {
-                window.location.href = '/';
+                window.location.href = '/home';
             } else if (selectedLanguage === 'es') {
                 window.location.href = '/esp';
             } else if(selectedLanguage === 'de'){

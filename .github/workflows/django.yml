@@ -3,8 +3,9 @@ name: Python application
 on:
   push:
     branches:
-      - develop
+      - develop2
       - master
+      - feature/7-1/CensusFiltering
 
 jobs:
   build:

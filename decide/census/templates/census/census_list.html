@@ -1,0 +1,186 @@
+<html>
+    <head>
+        {% load static %}
+
+    <!-- Bootstrap -->
+    <link href="{% static 'inicio/vendor/bootstrap/css/bootstrapp.min.css'%}" rel="stylesheet">
+
+     <!-- Fonts -->
+    
+     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300&display=swap" rel="stylesheet"> 
+     <link href="https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i" rel="stylesheet">
+     
+
+    <!-- Styles -->
+    <link href="{% static 'inicio/css/gestion.css'%}" rel="stylesheet">
+    </head>
+
+    {% block extrahead %}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <style>
+        body {
+          background-color: #f5f5f5; 
+          font-family: 'Arial', sans-serif;
+        }
+    
+        .jumbotron {
+          background: linear-gradient(to right, #3498db, #1abc9c); 
+          color: #fff;
+        }
+    
+        .section-header {
+          background-color: #e74c3c; 
+          color: #fff;
+          padding: 10px;
+          margin-bottom: 20px;
+          border-radius: 5px;
+        }
+    
+    
+        .card-body {
+          background-color: #fff;
+        }
+    
+        .language-dropdown-link{
+            cursor: pointer;
+            color:#1abc9c;
+            border-radius: 100px;
+            padding: 8px;
+            display: inline-block;
+        }
+        .language-dropdown {
+            background-color: #1abc9c;
+            display: none; 
+            color: white; 
+            border-radius: 10px;
+            margin-top: 5px; 
+        } 
+        .language-dropdown option {
+            background-color:#1abc9c; 
+            color: white; 
+            border-radius: 10px;
+            padding: 8px;
+        }
+      </style>
+    {% endblock %}
+        {% block content %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="/">DECIDE </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/census">Census</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/census">Census search</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/voting/voting">Voting</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/auth/group">Groups</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/auth/user">Users</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/store">Votes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/voting/question">Questions</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link language-dropdown-link" href="#" onclick="toggleLanguageDropdown()">Language</a>
+                    <select class="language-dropdown" id="languageSelect">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="de">Deutsch</option>
+                        <option value="fr">Français</option>
+                   
+                    </select>
+                </li>
+    
+                
+            </ul>
+        </div>
+    </nav>
+    {% endblock%}
+
+    <body>
+
+        <h1 class="site-heading text-center text-white d-none d-lg-block">
+            <span class="site-heading-lower" style="color: blue;">Buscador de Censos</span>
+        </h1>
+
+  <!-- Contenido -->
+  {% block extrabody %}
+
+
+<article class="text-center">
+    <h1>Seleccione el censo</h1>
+    <form class="text-align=right" action="{% url 'search_results' %}" method="GET">
+        <label for="census_id"></label> <br>
+        <select id="census_id" name="census_id" style="border: 1px solid; border-color: rgb(14, 14, 88);padding: 8px 16px;background-color: rgb(228, 228, 255);font-size: 100%">
+            {% for census in census_list %}
+                <option value="{{ census.id }}">{{ census.name }}</option>
+            {% endfor %}
+        </select>
+        <button style="padding: 8px 16px;font-size: 100%;background-color: rgb(204, 204, 255);">Buscar</button>
+    </form>
+</article>
+<br><hr style="width:100%;text-align:left;margin-left:0;border-width:3;color: rgb(14, 14, 88);">
+<div class="text-center">
+<a href="{% url 'export_census_json'%}">
+  <button>Descargar JSON</button> <br><br>
+<a href="{% url 'export_census_csv'%}">
+  <button>Descargar CSV</button>  
+</div>
+<br><hr style="width:100%;text-align:left;margin-left:0;border-width:3;color: rgb(14, 14, 88);">
+
+
+{% endblock%}
+
+    <!-- Footer -->
+    <footer class="footer text-faded text-center py-5">
+      <div class="container">
+        <p class="m-0">
+	        <a href="#" class="link">
+	          <span class="fa-stack fa-lg">
+	            <i class="fa fa-circle fa-stack-2x"></i>
+	            <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+	          </span>
+	        </a>
+	        <a href="#" class="link">
+	          <span class="fa-stack fa-lg">
+	            <i class="fa fa-circle fa-stack-2x"></i>
+	            <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+	          </span>
+	        </a>
+	        <a href="#" class="link">
+	          <span class="fa-stack fa-lg">
+	            <i class="fa fa-circle fa-stack-2x"></i>
+	            <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+	          </span>
+	        </a>
+	    </p>
+        <p class="m-0 mbt">
+        	<h5 style="color: rgb(14, 14, 88);">Telefono de Contacto: +34 123456789</h5>
+        	<h6 style="color: rgb(14, 14, 88);">Dirección Tienda Física: C. Francisco Pizarro, s/n, 16610 Casas de Fernando Alonso, Cuenca</h6>
+		</p>
+        <p class="m-0 mbt1">&copy; Decide 2023</p>
+      </div>
+	</footer>
+
+    <!-- Bootstrap -->
+    <script src="{% static 'inicio/vendor/jquery/jquery.min.js'%}"></script>
+    <script src="{% static 'inicio/vendor/bootstrap/js/bootstrap.bundle.min.js'%}"></script>
+
+    </body>
+
+</html>
