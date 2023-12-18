@@ -74,4 +74,3 @@ class StoreTextCase(BaseTestCase):
         }
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 401)
-

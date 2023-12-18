@@ -312,5 +312,6 @@ class ExportCensusCSVTest(BaseExportTestCase):
         # Comparar los valores en las posiciones 0 y 1
         self.assertEqual(expected_data[0], actual_data[0].strip())  # Comparar name
         self.assertEqual(expected_data[1], actual_data[3].strip())  # Comparar has_voted
-
-
+        
+        
+        
