@@ -37,8 +37,8 @@ Para cumplir con el objetivo de mejorar el proyecto base de Decide, hemos desarr
 Para esta nueva funcionalidad, hemos modificado el formulario de registro para que, un usuario no autenticado puede
 registrarse a partir del formulario de registro. En este nuevo formulario hemos añadido email y verificación de contraseña,
 repitiendo esta dos veces para ser aceptado el formulario.
-- Peticion al censo (Pedro López y Manuel Ortiz):
-Un usuario podrá solicitar a un administrador que sea incluido en el censo de la votación de la cual quiera participar. Para hacer esta solicitud, el usuario deberá rellenar un formulario con su username, email y una descripción de por qué quiere participar en dicha votación. Al administrador le llega un correo con la solicitud del usuario y podrá decidir si acepta la petición o la desestima.
+- Petición al censo (Pedro López y Manuel Ortiz):
+Un usuario podrá solicitar a un administrador que sea incluido en el censo de la votación de la cual quiera participar. Para hacer esta solicitud, el usuario deberá rellenar un formulario con su username, email y una descripción de en qué votación quiere particapar y por qué quiere participar en dicha votación. Además, se ha añadido una vista más, para ver las votaciones abiertas disponibles para que el usuario pueda hacer la solicitud correctamente. Al administrador le llega un correo con la solicitud del usuario y podrá decidir si acepta la petición o la desestima.
 - Exportar censo como csv y json (Manuel Francisco Barcia y Julen Redondo):
 La funcionalidad ofrece al administrador la posibilidad de descargar en .csv o .json los datos de todos los censos disponibles en la aplicación.
 - Añadir Home de administrador traducible a distintos idiomas (Manuel Francisco Barcia y Julen Redondo):
