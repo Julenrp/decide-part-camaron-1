@@ -1,5 +1,14 @@
 [![Build Status](https://travis-ci.com/wadobo/decide.svg?branch=master)](https://travis-ci.com/wadobo/decide) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/6a6e89e141b14761a19288a6b28db474)](https://www.codacy.com/gh/decide-update-4-1/decide-update-4.1/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=decide-update-4-1/decide-update-4.1&amp;utm_campaign=Badge_Grade) [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/6a6e89e141b14761a19288a6b28db474)](https://www.codacy.com/gh/decide-update-4-1/decide-update-4.1/dashboard?utm_source=github.com&utm_medium=referral&utm_content=decide-update-4-1/decide-update-4.1&utm_campaign=Badge_Coverage)
 
+
+Integrantes del proyecto
+---------------------------------
+- Barcia Jiménez, Manuel Francisco
+- García Lergo, Horacio
+- López Ruz, Pedro
+- Ortiz Blanco, Manuel
+- Redondo Pacheco, Julen
+
 Plataforma voto electrónico educativa
 =====================================
 
@@ -12,7 +21,6 @@ votación, por lo que prima la simplicidad por encima de la eficiencia
 cuando sea posible. Por lo tanto se asumen algunas carencias para permitir
 que sea entendible y extensible.
 
-
 Subsistemas, apps y proyecto base
 ---------------------------------
 
@@ -20,6 +28,24 @@ El proyecto se divide en [subsistemas](doc/subsistemas.md), los cuales estarán 
 entre ellos. Para conseguir esto, los subsistemas se conectarán entre si mediante API y necesitamos un proyecto base donde configurar las ruts de estas API.
 
 Este proyecto Django estará dividido en apps (subsistemas y proyecto base), donde cualquier app podrá ser reemplazada individualmente.
+
+Funcionalidades añadidas al proyecto Decide
+---------------------------------
+Para cumplir con el objetivo de mejorar el proyecto base de Decide, hemos desarrollado las siguientes 5 funcionalidades:
+
+- Registro de Usuarios (Pedro López y Manuel Ortiz):
+Para esta nueva funcionalidad, hemos modificado el formulario de registro para que, un usuario no autenticado puede
+registrarse a partir del formulario de registro. En este nuevo formulario hemos añadido email y verificación de contraseña,
+repitiendo esta dos veces para ser aceptado el formulario.
+- Peticion al censo (Pedro López y Manuel Ortiz):
+Un usuario podrá solicitar a un administrador que sea incluido en el censo de la votación de la cual quiera participar. Para hacer esta solicitud, el usuario deberá rellenar un formulario con su username, email y una descripción de por qué quiere participar en dicha votación. Al administrador le llega un correo con la solicitud del usuario y podrá decidir si acepta la petición o la desestima.
+- Exportar censo como csv y json (Manuel Francisco Barcia y Julen Redondo):
+La funcionalidad ofrece al administrador la posibilidad de descargar en .csv o .json los datos de todos los censos disponibles en la aplicación.
+- Añadir Home de administrador traducible a distintos idiomas (Manuel Francisco Barcia y Julen Redondo):
+Se ha añadido una nueva página Home, que solo está disponible para los administradores. En dicha página se explican los diferentes apartados de la aplicación, existe una barra de navegación para acceder a los distintos apartados de decide y además, se ha añadido un desplegable con el que se puede traducir la página al idioma deseado, entre ellos, inglés, alemán, francés y el idioma base, el español.
+- Filtrado de censo (Horacio García):
+La entidad de censo ha experimentado modificaciones significativas; concretamente, se eliminaron las referencias a "voter_id" y "voting_id", y en su lugar se incorporaron dos nuevos atributos: "nombre del censo" y la capacidad de seleccionar los usuarios deseados de una lista predefinida.
+
 
 Gateway
 ---------
