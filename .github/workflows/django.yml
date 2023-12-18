@@ -5,6 +5,7 @@ on:
     branches:
       - develop2
       - master
+      - feature/7-1/CensusFiltering
 
 jobs:
   build:

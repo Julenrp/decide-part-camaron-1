@@ -1,5 +1,5 @@
 import json
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView,ListView
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from django.views import View
@@ -14,6 +14,7 @@ from rest_framework.status import (
 )
 from base.perms import UserIsStaff
 from .models import Census
+from voting.models import Voting
 
 from django.http import HttpResponse
 import csv
@@ -25,7 +26,29 @@ from django.shortcuts import render, redirect
 from .forms import FormularioPeticion
 from django.core.mail import EmailMessage
 
+class CensusList(ListView):
+    model = Census
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        censo = Census.objects.all()
+        context['name'] = sorted(censo, key=lambda obj: obj.name.lower())
+        return context
+
+class CensusResultsView(ListView):
+    model = Census
+    template_name = 'census/results.html'
+
+    def get_context_data(self,*args,**kwargs):  # new
+        query = self.request.GET.get("census_id")
+        census = Census.objects.get(id=query)
+        object_list = census.users.all()
+        voting_list = Voting.objects.filter(census=query)
+        context = super(CensusResultsView, self).get_context_data(*args,**kwargs)
+        context['object_list'] = object_list
+        context['voting_list'] = voting_list
+        context['censo_id'] = query
+        return context
 
 class CensusCreate(generics.ListCreateAPIView):
     permission_classes = (UserIsStaff,)
@@ -63,15 +86,16 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
             return Response('Invalid voter', status=ST_401)
         return Response('Valid voter')
 
+    
 class ExportCensusCsv(View):
-    def get(self, request):
+    def get (self, request):
         census_data = Census.objects.all()
         response = self.export_csv(census_data)
         return response
     
     def export_csv(self, census_data):
         if not census_data:
-            return HttpResponse('No data to export CSV')
+            return HttpResponse('No data to export excel')
         
         counter = self.request.session.get('download_counter_csv', 1)
         filename = f"censusv{counter}.csv"
@@ -80,38 +104,111 @@ class ExportCensusCsv(View):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         writer = csv.writer(response)
-        writer.writerow(['name', 'users', 'has_voted'])
+        writer.writerow(['name', 'users', 'votings', 'has_voted'])
 
         for data in census_data:
-            # Convierte el objeto relacionado a una lista de valores
-            users_list = list(data.users.values_list('username', flat=True)) if data.users.exists() else []
-            writer.writerow([data.name, ', '.join(users_list), data.has_voted])
+            votQuery = Voting.objects.filter(census=data.id)
+            votings = []
+            for voting in votQuery:
+                votings.append(voting.name)
+            
+            userQuery = data.users.all()
+            usernames = []
+            for user in userQuery:
+                usernames.append(user.username)
+            writer.writerow([data.name, usernames, votings, data.has_voted])
 
         return response
-    
+
 class ExportCensusJson(View):
-    def get(self, request):
+    def get (self, request):
         census_data = Census.objects.all()
         response = self.export_json(census_data)
         return response
     
     def export_json(self, census_data):
         if not census_data:
-            return HttpResponse('No data to export JSON')
+            return HttpResponse('No data to export excel')
         
         data = []
         for c in census_data:
-            # Convierte el objeto ManyRelatedManager a una lista de valores
-            users_list = list(c.users.values_list('username', flat=True)) if c.users.exists() else []
-            data.append({'name': c.name, 'users': users_list,'has_voted': c.has_voted})
-        data_json = json.dumps(data, indent=2)  # indent=2 para una salida JSON más legible
+            votQuery = Voting.objects.filter(census=c.id)
+            votings = []
+            for voting in votQuery:
+                votings.append(voting.name)
+            
+            userQuery = c.users.all()
+            usernames = []
+            for user in userQuery:
+                usernames.append(user.username)
+
+            data.append({'name': c.name, 'users': usernames, 'votings': votings, 'has_voted': c.has_voted})
+
+        data_json = json.dumps(data)
         counter = self.request.session.get('download_counter', 1)
         filename = f"censusv{counter}.json"
         self.request.session['download_counter'] = counter + 1
 
-        response = HttpResponse(data_json, content_type='application/json; charset=utf-8')
+        response = HttpResponse(data_json, content_type='text/json')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
+        return response
+
+class ExportCensusDetailCsv(View):
+    def get (self, request, census_id):
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="census_{census_id}_data.csv"'
+
+        try:
+            census = Census.objects.get(id=census_id)
+        except Census.DoesNotExist:
+            return HttpResponse('No data to export excel')
+        
+        writer = csv.writer(response)
+        writer.writerow(['ID', 'Name', 'Usernames','Has Voted']) 
+
+        usernames = []
+
+        for user in census.users.all():
+            usernames.append(user.username)
+
+        voting_list = Voting.objects.filter(census=census_id)
+        votings = []
+
+        for voting in voting_list:
+            votings.append(voting.name)
+
+        writer.writerow([census.id, census.name, usernames, census.has_voted, votings])
+
+
+        return response
+
+class ExportCensusDetailJson(View):
+    def get (self, request, census_id):
+        try:
+            census = Census.objects.get(id=census_id)
+        except Census.DoesNotExist:
+            return HttpResponse("Census ID does not exist", status=404)
+        
+        usernames = list(census.users.values('username'))
+        voting_list = Voting.objects.filter(census=census_id)
+        votings = list(voting_list.values('name'))
+
+        census_data = {
+            'id': census.id,
+            'name': census.name,
+            'users': usernames,
+            'has_voted': census.has_voted,
+            'votings': votings
+        }
+
+        response = HttpResponse(
+            json.dumps(census_data, indent=4),
+            content_type='application/json'
+        )
+        response['Content-Disposition'] = f'attachment; filename="census_{census_id}_data.json"'
+        
         return response
 
         
