@@ -57,25 +57,25 @@ class HomeTestCase(StaticLiveServerTestCase):
         texto_pagina = self.driver.find_element(By.TAG_NAME, 'body').text
         palabras_en_espanol = ['Bienvenue']
         alguna_palabra_en_espanol_presente = any(palabra in texto_pagina for palabra in palabras_en_espanol)
-        self.assertTrue(alguna_palabra_en_espanol_presente, f"La URL /esp/ no contiene {palabras_en_espanol}")
+        self.assertFalse(alguna_palabra_en_espanol_presente, f"La URL /esp/ no contiene {palabras_en_espanol}")
     
     def test_traduccion_ingles_fail(self):
         self.driver.get(f'{self.live_server_url}/home/')
         texto_pagina = self.driver.find_element(By.TAG_NAME, 'body').text
         palabras_en_ingles = ['Bienvenido']
         alguna_palabra_en_ingles_presente = any(palabra in texto_pagina for palabra in palabras_en_ingles)
-        self.assertTrue(alguna_palabra_en_ingles_presente, f"La URL /home/ no contiene {palabras_en_ingles}")
+        self.assertFalse(alguna_palabra_en_ingles_presente, f"La URL /home/ no contiene {palabras_en_ingles}")
 
     def test_traduccion_frances_fail(self):
         self.driver.get(f'{self.live_server_url}/fra/')
         texto_pagina = self.driver.find_element(By.TAG_NAME, 'body').text
         palabras_en_frances = ['Willkommen']
         alguna_palabra_en_frances_presente = any(palabra in texto_pagina for palabra in palabras_en_frances)
-        self.assertTrue(alguna_palabra_en_frances_presente, f"La URL /fra/ no contiene {palabras_en_frances}")
+        self.assertFalse(alguna_palabra_en_frances_presente, f"La URL /fra/ no contiene {palabras_en_frances}")
 
     def test_traduccion_aleman_fail(self):
         self.driver.get(f'{self.live_server_url}/alm')
         texto_pagina = self.driver.find_element(By.TAG_NAME, 'body').text
         palabras_en_aleman = ['Bienvenido']
         alguna_palabra_en_aleman_presente = any(palabra in texto_pagina for palabra in palabras_en_aleman)
-        self.assertTrue(alguna_palabra_en_aleman_presente, f"La URL /alm/ no contiene {palabras_en_aleman}")
+        self.assertFalse(alguna_palabra_en_aleman_presente, f"La URL /alm/ no contiene {palabras_en_aleman}")
